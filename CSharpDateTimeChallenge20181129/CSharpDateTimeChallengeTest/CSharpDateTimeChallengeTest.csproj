@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CSharpDateTimeChallenge\CSharpDateTimeChallenge.csproj" />
+    <ProjectReference Include="..\CSharpDateTimeChallenge\CSharpDateTimeChallenge20181129.csproj" />
   </ItemGroup>
 
 </Project>

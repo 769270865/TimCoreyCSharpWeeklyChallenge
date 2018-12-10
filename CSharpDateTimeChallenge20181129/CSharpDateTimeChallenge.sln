@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDateTimeChallenge", "CSharpDateTimeChallenge\CSharpDateTimeChallenge.csproj", "{BA3ED12C-44F1-4A19-9A6E-660D63BE92FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDateTimeChallenge20181129", "CSharpDateTimeChallenge\CSharpDateTimeChallenge20181129.csproj", "{BA3ED12C-44F1-4A19-9A6E-660D63BE92FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpDateTimeChallengeTest", "CSharpDateTimeChallengeTest\CSharpDateTimeChallengeTest.csproj", "{FBC224B4-4B87-4074-B2E0-2987C0B60A68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpDateTimeChallengeTest", "CSharpDateTimeChallengeTest\CSharpDateTimeChallengeTest.csproj", "{FBC224B4-4B87-4074-B2E0-2987C0B60A68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
