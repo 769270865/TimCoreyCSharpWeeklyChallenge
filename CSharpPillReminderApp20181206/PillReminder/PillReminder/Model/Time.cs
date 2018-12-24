@@ -12,12 +12,15 @@ namespace PillReminder
         public int Hour { get; private set; }
         public int Minute { get; private set; }
         public int Second { get; private set; }
+        public long Ticks { get; set; }
+
 
         public Time(DateTime dateTime)
         {
             Hour = dateTime.Hour;
             Minute = dateTime.Minute;
             Second = dateTime.Minute;
+            Ticks = dateTime.TimeOfDay.Ticks;
         }
         public Time(int hour, int minute,int second)
         {
@@ -34,6 +37,14 @@ namespace PillReminder
                 throw new ArgumentException("Second should be a number between 0 and 59");
             }
             Hour = hour; Minute = minute; Second = second;
+            Ticks = ((long)second * 10000000) + ((long)minute * 60 * 10000000) + ((long)hour * 60 * 60 * 10000000);
+
+        }
+        public DateTime ToDateTime()
+        {
+            DateTime currentTime = DateTime.Now;
+            DateTime time = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, Hour, Minute, 0);
+            return time;
         }
         
 
