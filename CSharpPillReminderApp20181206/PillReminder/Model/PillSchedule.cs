@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PillReminder.Model
 {
-    [Serializable]
+    
     public class PillSchedule : IEquatable<PillSchedule>
     {
         public Pill Pill { get; set; }
@@ -55,15 +56,36 @@ namespace PillReminder.Model
 
         public bool Equals(PillSchedule other)
         {
-            return other != null &&
-                   Pill.Equals(other.Pill) &&
-                   TakenRecordForTheDay.Equals(other.TakenRecordForTheDay);
+            if (other == null)
+                return false;
+             
+            if (!Pill.Equals(other.Pill))               
+                return false;
+            
+
+            if (TakenRecordForTheDay.Count != other.TakenRecordForTheDay.Count)
+            {
+                return false; 
+            }
+            else
+            {
+                for (int i = 0; i < other.TakenRecordForTheDay.Count; i++)
+                {
+                    if (!other.TakenRecordForTheDay[i].Item1.Equals(TakenRecordForTheDay[i].Item1))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true; 
+
         }
 
         public override int GetHashCode()
         {
             var hashCode = 2116795969;
-            hashCode = hashCode * -1521134295 + Pill.GetHashCode();
+            hashCode = hashCode * -1521134297 + Pill.GetHashCode();
             hashCode = hashCode * -1521134295 + TakenRecordForTheDay.GetHashCode();
             return hashCode;
         }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using PillReminder.Model;
 
-namespace PillReminder
+namespace PillReminder.Persistence
 {
-    public class PillReminderIO
+    public class PillReminderIO : IPillReminderIO
     {
         string persistenceFolderPath,pillDataFolderPath,pillScheduleDataFolderPath;
 
@@ -41,9 +41,9 @@ namespace PillReminder
 
             string[] PillsJsonFilesPath = Directory.GetFiles(pillDataFolderPath, "*.txt");
 
-            foreach (var file in PillsJsonFilesPath)
+            foreach (var filePath in PillsJsonFilesPath)
             {
-                using (StreamReader sr = new StreamReader(file))
+                using (StreamReader sr = new StreamReader(filePath))
                 using (JsonReader reader = new JsonTextReader(sr))
                 {
                     allPills.Add(serializer.Deserialize<Pill>(reader));
@@ -53,5 +53,35 @@ namespace PillReminder
             return allPills;
         }
 
+        public void SavePillSchedule(PillSchedule pillSchedule)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.Pill.Name}_Schedule.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, pillSchedule);
+            }
+
+        }
+        public List<PillSchedule> GetAllPillSchedule()
+        {
+            List<PillSchedule> pillSchedules = new List<PillSchedule>();
+
+            JsonSerializer serializer = new JsonSerializer();
+          
+
+
+            string[] pillScheduleDataFilesPath = Directory.GetFiles(pillScheduleDataFolderPath, "*.txt");
+            foreach (var filePaath in pillScheduleDataFilesPath)
+            {
+                using (StreamReader sr = new StreamReader(filePaath))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    pillSchedules.Add(serializer.Deserialize<PillSchedule>(reader));
+                }
+            }
+            return pillSchedules;
+        }
     }
 }

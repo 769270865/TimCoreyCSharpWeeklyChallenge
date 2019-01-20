@@ -10,7 +10,7 @@ namespace PillReminderTest.Model
     public class TimeTest
     {
         DateTime sampleDateTime;
-        Time sampleTime;
+        Time testTime;
         double timeOfDayTicks;
         
 
@@ -18,7 +18,7 @@ namespace PillReminderTest.Model
         public void OneTimeSetUp()
         {
             sampleDateTime = new DateTime(2018, 12, 24, 14, 15, 10);
-            sampleTime = new Time(sampleDateTime);
+            testTime = new Time(sampleDateTime);
 
             timeOfDayTicks = sampleDateTime.TimeOfDay.Ticks;
 
@@ -36,12 +36,25 @@ namespace PillReminderTest.Model
         [Test]
         public void TimeToDateTimeTest()
         {
-            DateTime testDateTime = sampleTime.ToDateTime();
+            DateTime testDateTime = testTime.ToDateTime();
 
             Assert.That(testDateTime.Hour == sampleDateTime.Hour && testDateTime.Minute == sampleDateTime.Minute);
                         
                      
         }
+        [Test]
+        public void TimeEqualTest()
+        {
+            Time time = new Time(sampleDateTime.Hour, sampleDateTime.Minute, sampleDateTime.Second);
+            Assert.That(time.Equals(testTime));
+        }
+        [Test]
+        public void TimeNotEqualTest()
+        {
+            Time differentTime = new Time(15, 30, 30);
+            Assert.False(differentTime.Equals(testTime));
+        }
+
 
     }
 }

@@ -11,7 +11,7 @@ namespace PillReminderTest.Model
     {
 
         List<Tuple<Time, bool>> threeTimesPerDaySchedule;
-        PillSchedule pillSchedule;
+        PillSchedule testPillSchedule;
         Pill testPill;
 
 
@@ -25,8 +25,9 @@ namespace PillReminderTest.Model
                 new Tuple<Time, bool>(new Time(12,0,0),false),
                 new Tuple<Time, bool>(new Time(18,0,0),false),
             };
-            pillSchedule = new PillSchedule(testPill, threeTimesPerDaySchedule);
             testPill = new Pill("Foo", 3);
+            testPillSchedule = new PillSchedule(testPill, threeTimesPerDaySchedule);
+           
         }
 
         [Test]
@@ -35,7 +36,7 @@ namespace PillReminderTest.Model
             Time currentMocktime = new Time(11, 55, 1);
             Time pillTakingTime = new Time();
 
-            bool isTimeToTakePill = pillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
+            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
 
             Assert.That(isTimeToTakePill && pillTakingTime.Hour == 12 && pillTakingTime.Minute == 0);
         }
@@ -45,7 +46,7 @@ namespace PillReminderTest.Model
             Time currentMocktime = new Time(12, 04, 59);
             Time pillTakingTime = new Time();
 
-            bool isTimeToTakePill = pillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
+            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
 
             Assert.That(isTimeToTakePill && pillTakingTime.Hour == 12 && pillTakingTime.Minute == 0);
         }
@@ -53,7 +54,7 @@ namespace PillReminderTest.Model
         public void PillScheduleDifferentPillNotEqualTest()
         {
             PillSchedule pillScheduleWithDifferentPill = new PillSchedule(new Pill("Bar", 2), threeTimesPerDaySchedule);
-            Assert.IsFalse(pillSchedule.Equals(pillScheduleWithDifferentPill));
+            Assert.IsFalse(testPillSchedule.Equals(pillScheduleWithDifferentPill));
         }
         [Test]
         public void PillScheduleDifferentScheduleNotEqualTest()
@@ -66,20 +67,45 @@ namespace PillReminderTest.Model
             };
             PillSchedule pillScheduleWithDifferentSchedule = new PillSchedule(testPill, differentSchedule);
 
-            Assert.IsFalse(pillSchedule.Equals(pillScheduleWithDifferentSchedule));
+            Assert.IsFalse(testPillSchedule.Equals(pillScheduleWithDifferentSchedule));
 
         }
+        [Test]
+        public void PillScheduleDifferentScheduleTimeCountNotEqalTest()
+        {
+            List<Tuple<Time, bool>> differentSchedule = new List<Tuple<Time, bool>>()
+            {
+                new Tuple<Time, bool>(new Time(6,0,0),false),
+                new Tuple<Time, bool>(new Time(12,0,0),false),
+                new Tuple<Time, bool>(new Time(18,0,0),false),
+                new Tuple<Time, bool>(new Time(23,0,0),false),
+            };
+            PillSchedule pillScheduleWithDifferentTimeCouunt = new PillSchedule(new Pill("Foo", 3), differentSchedule);
 
+            Assert.IsFalse(testPillSchedule.Equals(pillScheduleWithDifferentTimeCouunt));
+
+        }
+        [Test]
+        public void PillScheduleEqualTest()
+        {
+            PillSchedule secondSchedule = new PillSchedule(new Pill("Foo", 3), new List<Tuple<Time, bool>>()
+                                                                                                            {
+                                                                                                                new Tuple<Time, bool>(new Time(6,0,0),false),
+                                                                                                                new Tuple<Time, bool>(new Time(12,0,0),false),
+                                                                                                                new Tuple<Time, bool>(new Time(18,0,0),false),
+                                                                                                            });
+            Assert.That(secondSchedule.Equals(testPillSchedule));
+        }
         [Test]
         public void PillSchedule_ResetTest()
         {
-            for (int i = 0; i < pillSchedule.TakenRecordForTheDay.Count; i++)
+            for (int i = 0; i < testPillSchedule.TakenRecordForTheDay.Count; i++)
             {
-                pillSchedule.TakenRecordForTheDay[i] = new Tuple<Time, bool>(pillSchedule.TakenRecordForTheDay[i].Item1, true);
+                testPillSchedule.TakenRecordForTheDay[i] = new Tuple<Time, bool>(testPillSchedule.TakenRecordForTheDay[i].Item1, true);
             }
-            pillSchedule.ResetSchedule();
+            testPillSchedule.ResetSchedule();
 
-            Assert.That(pillSchedule.TakenRecordForTheDay.FindAll(p => p.Item2).Count == 0);
+            Assert.That(testPillSchedule.TakenRecordForTheDay.FindAll(p => p.Item2).Count == 0);
 
 
         }
