@@ -7,28 +7,43 @@ using System.Threading.Tasks;
 
 namespace PillReminder.Persistence
 {
+    /// <summary>
+    /// Persistence data storae object that flatten complex type for json storage
+    /// </summary>
     public class PillScheduleStorageObject
     {
-        public readonly Pill Pill;
-        public readonly List<DateTime> TakenTime;
-        public readonly List<bool> HasTaken;
+        public  Pill Pill;
+        public  List<DateTime> TakenTimes;
+        public  List<bool> HasTaken;
 
+
+        public PillScheduleStorageObject() { }
+            
+            
+        
         public PillScheduleStorageObject(PillSchedule pillSchedule)
         {
-            TakenTime = new List<DateTime>();
+            TakenTimes = new List<DateTime>();
             HasTaken = new List<bool>();
             Pill = pillSchedule.Pill;
 
             foreach (var item in pillSchedule.TakenRecordForTheDay)
             {
-                TakenTime.Add(item.Item1.ToDateTime());
+                TakenTimes.Add(item.Item1.ToDateTime());
                 HasTaken.Add(item.Item2);
             }
 
         }
         public PillSchedule PillScheduleStorageObjectToPillSchedule()
         {
-            throw new NotImplementedException();
+            List<Tuple<Time, bool>> takenRecord = new List<Tuple<Time, bool>>();
+            for (int i = 0; i < TakenTimes.Count; i++)
+            {
+                takenRecord.Add(new Tuple<Time, bool>(new Time(TakenTimes[i]), HasTaken[i])); 
+            }
+            PillSchedule pillSchedule = new PillSchedule(Pill, takenRecord);
+
+            return pillSchedule;
         }
     }
 }

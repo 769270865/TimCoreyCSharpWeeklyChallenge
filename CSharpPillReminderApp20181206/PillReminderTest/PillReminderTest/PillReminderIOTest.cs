@@ -14,7 +14,7 @@ namespace PillReminderTest
     public class PillReminderIOTest
     {
         string applicationBasePath, testDataPath,pillScheduleDataFolderPath, pillDataFolderPath;
-        PillReminderIO pillReminderIO;
+        PillReminderIOJson pillReminderIO;
 
         Pill testPill;
         PillSchedule testPillSchedule;
@@ -22,9 +22,9 @@ namespace PillReminderTest
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            setUpFilesDirectory();
-
+            setUpFilesDirectory(); 
             setUpTestPillData();
+            pillReminderIO = new PillReminderIOJson(testDataPath);
         }
 
         private void setUpTestPillData()
@@ -36,29 +36,30 @@ namespace PillReminderTest
                                                                                        new Tuple<Time, bool>(new Time(18,0,0),false),
                                                                                      });
         }
-
         private void setUpFilesDirectory()
         {
             applicationBasePath = AppDomain.CurrentDomain.BaseDirectory;
             testDataPath = Path.Combine(applicationBasePath, "PillReminderDataTest");
             pillScheduleDataFolderPath = Path.Combine(testDataPath, "PillScheduleData");
             pillDataFolderPath = Path.Combine(testDataPath, "PillData");
+            Directory.CreateDirectory(testDataPath);
         }
+
 
         [SetUp]
         public void SetUp()
         {
-            if (Directory.Exists(pillScheduleDataFolderPath))
-            {
-                Directory.Delete(pillScheduleDataFolderPath, true);
-            }
+            string[] pillScheduleDataFiles = Directory.GetFiles(pillScheduleDataFolderPath, "*.txt");
+            string[] pillDataFiles = Directory.GetFiles(pillDataFolderPath, "*.txt");
 
-            if (Directory.Exists(pillDataFolderPath))
+            foreach (var filePath in pillScheduleDataFiles)
             {
-                Directory.Delete(pillDataFolderPath, true);
+                File.Delete(filePath);
             }
-            pillReminderIO = new PillReminderIO(testDataPath);
-
+            foreach (var filePath in pillDataFiles)
+            {
+                File.Delete(filePath);
+            }
         }
         [Test]
         public void SavePillDataTest()
@@ -119,9 +120,23 @@ namespace PillReminderTest
 
             Assert.That(File.Exists(Path.Combine(pillScheduleDataFolderPath, $"{testPillSchedule.Pill.Name}_Schedule.txt")));
         }
+        [Test]
+        public void GetPillSchheduleTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{testPillSchedule.Pill.Name}_Schedule.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                PillScheduleStorageObject testPillScheduleStorageObject = new PillScheduleStorageObject(testPillSchedule);
+                serializer.Serialize(writer, testPillScheduleStorageObject);
+            }
+            List<PillSchedule> retrivedPillSchedule = pillReminderIO.GetAllPillSchedule();
+            Assert.That(retrivedPillSchedule.Count == 1 && retrivedPillSchedule[0].Equals(testPillSchedule));
+        }
 
         [Test]
-        public void GetPillSchedulesTest()
+        public void GetAllPillSchedulesTest()
         {
             List<PillSchedule> testPillSchedules = new List<PillSchedule>()
             {
@@ -146,9 +161,12 @@ namespace PillReminderTest
                 }),
                 
             }.OrderBy(p => p.Pill.Name).ToList();
+            List<PillScheduleStorageObject> testPillSchedulesStorageObject = new List<PillScheduleStorageObject>();
+            testPillSchedules.ForEach(p => testPillSchedulesStorageObject.Add((new PillScheduleStorageObject(p))));
+
 
             JsonSerializer serializer = new JsonSerializer();
-            foreach (var schedule in testPillSchedules)
+            foreach (var schedule in testPillSchedulesStorageObject)
             {
                 using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{schedule.Pill.Name}_Schedule.txt"))
                 using (JsonWriter writer = new JsonTextWriter(sw))

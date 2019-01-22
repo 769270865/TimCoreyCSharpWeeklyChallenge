@@ -35,8 +35,9 @@ namespace PillReminderTest.Model
         {
             Time currentMocktime = new Time(11, 55, 1);
             Time pillTakingTime = new Time();
+            Time interval = new Time(0,5,0);
 
-            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
+            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime,interval);
 
             Assert.That(isTimeToTakePill && pillTakingTime.Hour == 12 && pillTakingTime.Minute == 0);
         }
@@ -45,8 +46,9 @@ namespace PillReminderTest.Model
         {
             Time currentMocktime = new Time(12, 04, 59);
             Time pillTakingTime = new Time();
+            Time interval = new Time(0, 5, 0); 
 
-            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime);
+            bool isTimeToTakePill = testPillSchedule.IsTimeToTake(currentMocktime, out pillTakingTime,interval);
 
             Assert.That(isTimeToTakePill && pillTakingTime.Hour == 12 && pillTakingTime.Minute == 0);
         }

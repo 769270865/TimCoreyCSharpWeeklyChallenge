@@ -9,11 +9,11 @@ using PillReminder.Model;
 
 namespace PillReminder.Persistence
 {
-    public class PillReminderIO : IPillReminderIO
+    public class PillReminderIOJson : IPillReminderIO
     {
         string persistenceFolderPath,pillDataFolderPath,pillScheduleDataFolderPath;
 
-        public PillReminderIO(string PersistencePath)
+        public PillReminderIOJson(string PersistencePath)
         {
             persistenceFolderPath = PersistencePath;
 
@@ -55,32 +55,35 @@ namespace PillReminder.Persistence
 
         public void SavePillSchedule(PillSchedule pillSchedule)
         {
+            PillScheduleStorageObject pillScheduleStorageObject = new PillScheduleStorageObject(pillSchedule);
+
             JsonSerializer serializer = new JsonSerializer();
 
             using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.Pill.Name}_Schedule.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
-                serializer.Serialize(writer, pillSchedule);
+                serializer.Serialize(writer, pillScheduleStorageObject);
             }
 
         }
         public List<PillSchedule> GetAllPillSchedule()
         {
             List<PillSchedule> pillSchedules = new List<PillSchedule>();
+            List<PillScheduleStorageObject> pillScheduleStorageObjects = new List<PillScheduleStorageObject>();
 
             JsonSerializer serializer = new JsonSerializer();
-          
-
-
             string[] pillScheduleDataFilesPath = Directory.GetFiles(pillScheduleDataFolderPath, "*.txt");
             foreach (var filePaath in pillScheduleDataFilesPath)
             {
                 using (StreamReader sr = new StreamReader(filePaath))
                 using (JsonReader reader = new JsonTextReader(sr))
                 {
-                    pillSchedules.Add(serializer.Deserialize<PillSchedule>(reader));
+                    PillScheduleStorageObject pillScheduleStorageObject = serializer.Deserialize<PillScheduleStorageObject>(reader);
+                    pillScheduleStorageObjects.Add(pillScheduleStorageObject);
                 }
             }
+            pillScheduleStorageObjects.ForEach(p => pillSchedules.Add(p.PillScheduleStorageObjectToPillSchedule()));
+
             return pillSchedules;
         }
     }

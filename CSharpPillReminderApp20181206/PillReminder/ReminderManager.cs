@@ -8,34 +8,49 @@ using System.Timers;
 using Newtonsoft.Json;
 using PillReminder.Model;
 
+
 namespace PillReminder
 {
     public class ReminderManager
     {
         List<PillSchedule> PillsSchedules;
 
-
         public event EventHandler<PillReminderEventArg> OnRemindPill;
         List<Tuple<Pill,Time>> currentPills;
+
+        Time checkingInterval;
+        IPillReminderIO pillReminderIO;
+        ITimeProvider timeProvider;
 
         Timer pillReminderCheckingTimer;
 
 
-        public ReminderManager(string dataPersistencePath,double checkingInterval)
+        public ReminderManager(Time CheckingInterval,IPillReminderIO PillReminderIO,ITimeProvider TimeProvider)
+        {
+            setDependency(CheckingInterval, PillReminderIO, TimeProvider);
+
+            intializeReminderTimerData();
+
+        }
+
+        private void setDependency(Time CheckingInterval, IPillReminderIO PillReminderIO, ITimeProvider TimeProvider)
+        {
+            checkingInterval = CheckingInterval;
+            pillReminderIO = PillReminderIO;
+            timeProvider = TimeProvider;
+        }
+
+        private void intializeReminderTimerData()
         {
             PillsSchedules = new List<PillSchedule>();
-           
-            var textFiles = Directory.EnumerateFiles(dataPersistencePath, "*.txt");
+            PillsSchedules = pillReminderIO.GetAllPillSchedule();
 
-            foreach (var file in textFiles)
-            {
-                PillsSchedules.Add(JsonConvert.DeserializeObject<PillSchedule>(File.ReadAllText(file)));
-                
-            }
-            pillReminderCheckingTimer = new Timer(checkingInterval) { AutoReset = true,Enabled = true};
+            pillReminderCheckingTimer = new Timer(checkingInterval.Ticks) { AutoReset = true, Enabled = true };
             pillReminderCheckingTimer.Elapsed += checkingNextPileToTake;
-            
         }
+
+       
+
         void checkingNextPileToTake(object sender, ElapsedEventArgs eventArgs)
         {
             Time fiveMinuteFromNow = new Time(DateTime.Now.AddMinutes(5));
@@ -45,7 +60,7 @@ namespace PillReminder
             foreach (var pill in PillsSchedules)
             {
                 Time takingTime;
-                if (pill.IsTimeToTake(fiveMinuteFromNow,out takingTime) )
+                if (pill.IsTimeToTake(fiveMinuteFromNow,out takingTime,checkingInterval))
                 {
                     bool havePillTaken = pill.TakenRecordForTheDay.Find(p => p.Item1.Equals(takingTime)).Item2;
                     if (!havePillTaken)

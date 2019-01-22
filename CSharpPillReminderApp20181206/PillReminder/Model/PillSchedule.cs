@@ -14,22 +14,26 @@ namespace PillReminder.Model
         public List<Tuple<Time,bool>> TakenRecordForTheDay { get; set; }
         
 
-        // Time difference allowed for taken pills
-        const int TIME_OF_ALLOWED_DIFFERENCE_MiNUTES = 5;
-        const long TIME_OF_ALLOWED_DIFFERENCE_TICKS = (long)TIME_OF_ALLOWED_DIFFERENCE_MiNUTES * 60 * 10000000;
-
+        
         public PillSchedule(Pill pill, List<Tuple<Time, bool>> takenRecordForTheDay)
         {
             Pill = pill;
             TakenRecordForTheDay = takenRecordForTheDay;
         }
-
-        public bool IsTimeToTake(Time time,out Time timeToTake)
+        
+        /// <summary>
+        /// Check if it is the time to take this pill
+        /// </summary>
+        /// <param name="time">Current time</param>
+        /// <param name="timeToTake">Time pill should taken</param>
+        /// <param name="Interval">Time intervaal to check</param>
+        /// <returns>Is this pill should be taken</returns>
+        public bool IsTimeToTake(Time time,out Time timeToTake,Time Interval)
         {
             for (int i = 0; i < TakenRecordForTheDay.Count; i++)
             {
-                if (TakenRecordForTheDay[i].Item1.Ticks > time.Ticks - TIME_OF_ALLOWED_DIFFERENCE_TICKS &&
-                    TakenRecordForTheDay[i].Item1.Ticks < time.Ticks + TIME_OF_ALLOWED_DIFFERENCE_TICKS)
+                if (TakenRecordForTheDay[i].Item1.Ticks > time.Ticks - Interval.Ticks &&
+                    TakenRecordForTheDay[i].Item1.Ticks < time.Ticks + Interval.Ticks)
                 {
                     timeToTake = TakenRecordForTheDay[i].Item1;
                     return true;
@@ -40,6 +44,7 @@ namespace PillReminder.Model
 
             return false;
         }
+
 
         public void ResetSchedule()
         {
