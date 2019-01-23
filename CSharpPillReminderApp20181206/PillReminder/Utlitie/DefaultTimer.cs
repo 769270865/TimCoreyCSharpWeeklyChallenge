@@ -15,13 +15,15 @@ namespace PillReminder.Utlitie
         public DefaultTimer()
         {
             timer = new Timer();
+            timer.Elapsed += this.Elapsed; 
         }
         public DefaultTimer(double interval)
         {
             timer = new Timer(interval);
+            timer.Elapsed += this.Elapsed;
         }
         
-        private bool auutoReset;
+        
         public bool AutoReset
         {
             get { return timer.AutoReset; }
@@ -29,19 +31,28 @@ namespace PillReminder.Utlitie
         }
 
 
-        public bool Enabled { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public double Interval { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool Enabled
+        {
+            get { return timer.Enabled; }
+            set { timer.Enabled = value; }
+        }
+        public double Interval
+        {
+            get { return timer.Interval; }
+            set { timer.Interval = value;  }
+
+        }
 
         public event ElapsedEventHandler Elapsed;
 
         public void Start()
         {
-            throw new NotImplementedException();
+            timer.Start();
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            timer.Stop();
         }
     }
 }

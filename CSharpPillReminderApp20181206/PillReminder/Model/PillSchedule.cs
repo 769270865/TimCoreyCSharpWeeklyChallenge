@@ -39,7 +39,7 @@ namespace PillReminder.Model
                     return true;
                 }
             }
-            timeToTake = TakenRecordForTheDay.FindAll(p => p.Item1.Ticks > DateTime.Now.TimeOfDay.Ticks)
+            timeToTake = TakenRecordForTheDay.FindAll(p => p.Item1.Ticks > time.Ticks)
                          .OrderByDescending(x => x.Item1.Ticks).ToList().FirstOrDefault().Item1;
 
             return false;

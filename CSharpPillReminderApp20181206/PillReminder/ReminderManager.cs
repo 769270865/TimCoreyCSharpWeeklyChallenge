@@ -21,23 +21,26 @@ namespace PillReminder
         Time checkingInterval;
         IPillReminderIO pillReminderIO;
         ITimeProvider timeProvider;
+        ITimer pillReminderCheckingTimer;
 
-        Timer pillReminderCheckingTimer;
 
-
-        public ReminderManager(Time CheckingInterval,IPillReminderIO PillReminderIO,ITimeProvider TimeProvider)
+        public ReminderManager(Time CheckingInterval,IPillReminderIO PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
         {
-            setDependency(CheckingInterval, PillReminderIO, TimeProvider);
+            PillsSchedules = new List<PillSchedule>();
+            currentPills = new List<Tuple<Pill, Time>>();
+
+            setDependency(CheckingInterval, PillReminderIO, TimeProvider,TimerProvider);
 
             intializeReminderTimerData();
 
         }
 
-        private void setDependency(Time CheckingInterval, IPillReminderIO PillReminderIO, ITimeProvider TimeProvider)
+        private void setDependency(Time CheckingInterval, IPillReminderIO PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
         {
             checkingInterval = CheckingInterval;
             pillReminderIO = PillReminderIO;
             timeProvider = TimeProvider;
+            pillReminderCheckingTimer = timer;
         }
 
         private void intializeReminderTimerData()
@@ -45,22 +48,26 @@ namespace PillReminder
             PillsSchedules = new List<PillSchedule>();
             PillsSchedules = pillReminderIO.GetAllPillSchedule();
 
-            pillReminderCheckingTimer = new Timer(checkingInterval.Ticks) { AutoReset = true, Enabled = true };
+            pillReminderCheckingTimer.Interval = checkingInterval.Ticks;
+            pillReminderCheckingTimer.AutoReset = true;
+            pillReminderCheckingTimer.Enabled = true;
             pillReminderCheckingTimer.Elapsed += checkingNextPileToTake;
+            pillReminderCheckingTimer.Start(); 
+            
         }
 
        
 
         void checkingNextPileToTake(object sender, ElapsedEventArgs eventArgs)
         {
-            Time fiveMinuteFromNow = new Time(DateTime.Now.AddMinutes(5));
+            
 
             List<Tuple<Pill, Time>> newPillsToTake = new List<Tuple<Pill, Time>>();
             
             foreach (var pill in PillsSchedules)
             {
                 Time takingTime;
-                if (pill.IsTimeToTake(fiveMinuteFromNow,out takingTime,checkingInterval))
+                if (pill.IsTimeToTake(timeProvider.CurrentTime,out takingTime,checkingInterval))
                 {
                     bool havePillTaken = pill.TakenRecordForTheDay.Find(p => p.Item1.Equals(takingTime)).Item2;
                     if (!havePillTaken)
