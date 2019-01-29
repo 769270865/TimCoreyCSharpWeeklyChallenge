@@ -31,9 +31,9 @@ namespace PillReminderTest.Model
         }
 
         [Test]
-        public void PillScheduleCheck_IsTimeToTakeMinus5MinutesTest()
+        public void PillScheduleCheck_IsTimeToTakeMinusHalfIntervalMinutesTest()
         {
-            Time currentMocktime = new Time(11, 55, 1);
+            Time currentMocktime = new Time(11, 57, 30);
             Time pillTakingTime = new Time();
             Time interval = new Time(0,5,0);
 
@@ -42,9 +42,9 @@ namespace PillReminderTest.Model
             Assert.That(isTimeToTakePill && pillTakingTime.Hour == 12 && pillTakingTime.Minute == 0);
         }
         [Test]
-        public void PillScheduleCheck_IsTImeToTakePlus5MinutesTest()
+        public void PillScheduleCheck_IsTImeToTakePlusHalfIntervalMinutesTest()
         {
-            Time currentMocktime = new Time(12, 04, 59);
+            Time currentMocktime = new Time(12, 02, 30);
             Time pillTakingTime = new Time();
             Time interval = new Time(0, 5, 0); 
 

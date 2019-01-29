@@ -57,6 +57,7 @@
     <Compile Include="ReminderManager.cs" />
     <Compile Include="Model\Time.cs" />
     <Compile Include="Utlitie\DefaultTimer.cs" />
+    <Compile Include="Utlitie\LinqExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -25,23 +25,43 @@ namespace PillReminder.Model
         /// Check if it is the time to take this pill
         /// </summary>
         /// <param name="time">Current time</param>
-        /// <param name="timeToTake">Time pill should taken</param>
-        /// <param name="Interval">Time intervaal to check</param>
-        /// <returns>Is this pill should be taken</returns>
+        /// <param name="timeToTake">Time pill should taken,give 0 hour if no pill time is later then the given time</param>
+        /// <param name="Interval">Time intervaal to check,1/2 of interval before and after </param>
+        /// <returns>is it time to take this pill</returns>
         public bool IsTimeToTake(Time time,out Time timeToTake,Time Interval)
         {
             for (int i = 0; i < TakenRecordForTheDay.Count; i++)
             {
-                if (TakenRecordForTheDay[i].Item1.Ticks > time.Ticks - Interval.Ticks &&
-                    TakenRecordForTheDay[i].Item1.Ticks < time.Ticks + Interval.Ticks)
+                if (TakenRecordForTheDay[i].Item1.Ticks >= time.Ticks - Interval.Ticks/2 &&
+                    TakenRecordForTheDay[i].Item1.Ticks <= time.Ticks + Interval.Ticks/2)
                 {
                     timeToTake = TakenRecordForTheDay[i].Item1;
-                    return true;
+                    if (!TakenRecordForTheDay[i].Item2)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                   
                 }
             }
-            timeToTake = TakenRecordForTheDay.FindAll(p => p.Item1.Ticks > time.Ticks)
-                         .OrderByDescending(x => x.Item1.Ticks).ToList().FirstOrDefault().Item1;
+          
+            List<Tuple<Time, bool>> takenRecordAfterCurrentTime = TakenRecordForTheDay
+                .FindAll(p => p.Item1.Ticks > time.Ticks)
+                .OrderByDescending(p => p.Item1.Ticks)                
+                .ToList();
 
+            if (takenRecordAfterCurrentTime.Count > 0)
+            {
+                timeToTake = takenRecordAfterCurrentTime.Last().Item1;
+            }
+            else
+            {
+                timeToTake = new Time(0, 0, 0);
+            }
+           
             return false;
         }
 

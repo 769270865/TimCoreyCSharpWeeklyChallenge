@@ -16,28 +16,31 @@ namespace PillReminder
         List<PillSchedule> PillsSchedules;
 
         public event EventHandler<PillReminderEventArg> OnRemindPill;
-        List<Tuple<Pill,Time>> currentPills;
+        public List<Tuple<Pill, Time>> CurrentPills { get; private set; }
 
         Time checkingInterval;
+
         IPillReminderIO pillReminderIO;
         ITimeProvider timeProvider;
         ITimer pillReminderCheckingTimer;
 
+        
 
         public ReminderManager(Time CheckingInterval,IPillReminderIO PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
         {
             PillsSchedules = new List<PillSchedule>();
-            currentPills = new List<Tuple<Pill, Time>>();
+            CurrentPills = new List<Tuple<Pill, Time>>();
+            checkingInterval = CheckingInterval;
 
-            setDependency(CheckingInterval, PillReminderIO, TimeProvider,TimerProvider);
+            setDependency(PillReminderIO, TimeProvider,TimerProvider);
 
             intializeReminderTimerData();
 
         }
 
-        private void setDependency(Time CheckingInterval, IPillReminderIO PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
+        private void setDependency(IPillReminderIO PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
         {
-            checkingInterval = CheckingInterval;
+           
             pillReminderIO = PillReminderIO;
             timeProvider = TimeProvider;
             pillReminderCheckingTimer = timer;
@@ -69,18 +72,14 @@ namespace PillReminder
                 Time takingTime;
                 if (pill.IsTimeToTake(timeProvider.CurrentTime,out takingTime,checkingInterval))
                 {
-                    bool havePillTaken = pill.TakenRecordForTheDay.Find(p => p.Item1.Equals(takingTime)).Item2;
-                    if (!havePillTaken)
-                    {
-                        newPillsToTake.Add(new Tuple<Pill, Time>(pill.Pill, takingTime));
-                    }
                     
+                    newPillsToTake.Add(new Tuple<Pill, Time>(pill.Pill, takingTime));
+                                       
                 }
             }
 
-            currentPills.AddRange(newPillsToTake);
-            //Remove duplicated
-            currentPills = currentPills.Distinct().ToList();
+            CurrentPills.AddRange(newPillsToTake);
+           
 
             if (newPillsToTake.Count > 0)
             {
@@ -94,24 +93,30 @@ namespace PillReminder
 
             if (pillScheduleIndex != -1)
             {
-                int takenRecordForTheDayIndex = PillsSchedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item2.Equals(pillTaken.Item2));
+                int takenRecordForTheDayIndex = PillsSchedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item1.Equals(pillTaken.Item2));
 
                 if (takenRecordForTheDayIndex != -1)
                 {
 
                     PillsSchedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex]
                         = new Tuple<Time, bool>(PillsSchedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex].Item1, true);
+                    CurrentPills.Remove(pillTaken);
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("Time","Given pilltaken time does not exist in schedule");
+                    
                 }
             }
             else
             {
-                throw new ArgumentOutOfRangeException("Pill given does not exist");
+                throw new ArgumentOutOfRangeException("Pill","Pill given does not exist");
             }
 
 
         }
+      
 
-        
 
     }
 }

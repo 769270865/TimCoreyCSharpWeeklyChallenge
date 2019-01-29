@@ -54,19 +54,12 @@ namespace PillReminderTest
 
         }
 
-        [SetUp]
-        public void SetUp()
-        {
-
-        }
         [Test]
-        public void CheckingPillsToTakeAt_12AM_Test()
+        public void CheckingPillsToTakeAt_12H_Test()
         {
             // Test Set ups
-            timeProvider = Substitute.For<ITimeProvider>();
-            timeProvider.CurrentTime.Returns(new Time(12, 0, 0));
-            timeProvider.CurrrentDateTime.Returns(new DateTime(2019, 1, 23, 12, 0, 0));
-            timerMoock = Substitute.For<ITimer>();
+            testDependencyIntialize(new DateTime(2019, 1, 23, 12, 0, 0));
+            
 
             List<Tuple<Pill, Time>> recivedPillsToTakke = new List<Tuple<Pill, Time>>();
             List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>()
@@ -75,18 +68,116 @@ namespace PillReminderTest
                 new Tuple<Pill, Time>(pills[2],new Time(12,0,0))
             }.OrderBy(p => p.Item1.Name).ToList();
             
-
             ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             reminderManager.OnRemindPill += (o, s) => recivedPillsToTakke = s.PillToTakeWithTime;
-    
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this,CreateElapsedEventArgs(new Time(12,5,0).ToDateTime()));
 
-            
 
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this,createElapsedEventArgs(new Time(12,0,0).ToDateTime()));
+       
             Assert.That(recivedPillsToTakke.OrderBy(p => p.Item1.Name).ToList().SequenceEqual(exceptedPills));
         }
+        [Test]
+        public void CheckingPillsToTakeAt_10H_Test()
+        {
+            testDependencyIntialize(new DateTime(2019, 1, 23, 10, 0, 0));         
 
-        public ElapsedEventArgs CreateElapsedEventArgs(DateTime signalTime)
+            List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>();
+
+            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            reminderManager.OnRemindPill += (o, s) => exceptedPills = s.PillToTakeWithTime;
+
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(10, 0, 0).ToDateTime()));
+
+            Assert.That(exceptedPills.Count == 0);
+        }
+
+        [Test]
+        public void CheckingOffPillTakkenAt_18H_Test()
+        {
+            testDependencyIntialize(new DateTime(2019, 1, 23, 18, 0, 0));
+            
+            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
+            reminderManager.CheckOffPillTaken(new Tuple<Pill, Time>(pills[2], new Time(18, 0, 0)));
+
+            List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>()
+            {
+                new Tuple<Pill, Time>(pills[0],new Time(18,0,0)),
+                new Tuple<Pill, Time>(pills[1],new Time(18,0,0)),
+                
+            }.OrderBy(p => p.Item1.Name).ToList();
+            List<Tuple<Pill, Time>> acturalPills = new List<Tuple<Pill, Time>>();
+            acturalPills = reminderManager.CurrentPills.OrderBy(p => p.Item1.Name).ToList();
+
+            Assert.That(exceptedPills.SequenceEqual(acturalPills));
+          
+       }
+        [Test]
+        public void CheckingOffPillThatDoesNotExistInSchedules()
+        {
+            testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
+            
+            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 00).ToDateTime()));
+            
+            var exceptionRecived = Assert.Throws<ArgumentOutOfRangeException>(()=> reminderManager.CheckOffPillTaken(new Tuple<Pill, Time>(new Pill("Red Pill", 3), new Time(22, 0, 0))));
+
+            Assert.That(exceptionRecived.Message, Is.EqualTo("Pill given does not exist\r\nParameter name: Pill"));      
+        
+        }
+        [Test]
+        public void CheckingOffPillThatTimeDoesNotExist()
+        {
+            testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
+            
+
+            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 0).ToDateTime()));
+
+
+            var exceptionRecived = Assert.Throws<ArgumentOutOfRangeException>(() => reminderManager.CheckOffPillTaken(new Tuple<Pill, Time>(pills[0], new Time(22, 0, 0))));
+            Assert.That(exceptionRecived.Message, Is.EqualTo("Given pilltaken time does not exist in schedule\r\nParameter name: Time"));
+
+        }
+
+      
+        [Test]
+        public void NoDuplicatedPillTestOnMutippleRemindEvent()
+        {
+            timeProvider = Substitute.For<ITimeProvider>();
+            timeProvider.CurrentTime.Returns(new Time(8, 0, 0));
+            timeProvider.CurrrentDateTime.Returns(new Time(8, 0, 0).ToDateTime());
+            timerMoock = Substitute.For<ITimer>();
+
+            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(8, 0, 0).ToDateTime()));
+            timeProvider.CurrentTime.Returns(new Time(18, 0, 0));
+            timeProvider.CurrrentDateTime.Returns(new Time(18, 0, 0).ToDateTime());
+            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
+
+            List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>()
+            {
+                new Tuple<Pill, Time>(pills[1],new Time(8,0,0)),
+                new Tuple<Pill, Time>(pills[0],new Time(18,0,0)),
+                new Tuple<Pill, Time>(pills[1],new Time(18,0,0)),
+                new Tuple<Pill, Time>(pills[2],new Time(18,0,0)),
+            }.OrderBy(p => p.Item1.Name).ToList();
+
+            List<Tuple<Pill, Time>> acturalPill = new List<Tuple<Pill, Time>>(reminderManager.CurrentPills).OrderBy(p => p.Item1.Name).ToList();
+           
+
+            Assert.That(exceptedPills.SequenceEqual(acturalPill));
+        }
+
+        void testDependencyIntialize(DateTime mockTime)
+        {
+            timeProvider = Substitute.For<ITimeProvider>();
+            timeProvider.CurrentTime.Returns(new Time(mockTime));
+            timeProvider.CurrrentDateTime.Returns(mockTime);
+            timerMoock = Substitute.For<ITimer>();
+        }
+
+        ElapsedEventArgs createElapsedEventArgs(DateTime signalTime)
         {
             var e = FormatterServices.GetUninitializedObject(typeof(ElapsedEventArgs)) as ElapsedEventArgs;
             if (e != null)
