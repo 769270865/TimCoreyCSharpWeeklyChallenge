@@ -1,4 +1,4 @@
-﻿using PillReminder.Model;
+﻿using Reminder.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace PillReminder.Utlitie
+namespace Reminder.Utlitie
 {
     public class DefaultTimer : ITimer
     {

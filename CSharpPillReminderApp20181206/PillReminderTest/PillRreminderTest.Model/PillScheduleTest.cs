@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
-using PillReminder;
-using PillReminder.Model;
+using Reminder;
+using Reminder.Model;
+using Reminder.PillReminnder.Model;
 
 namespace PillReminderTest.Model
 {

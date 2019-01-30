@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PillReminder.Model
+namespace Reminder.Model
 {
     public interface ITimeProvider
     {

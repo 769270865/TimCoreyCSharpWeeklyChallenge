@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using PillReminder;
-using PillReminder.Model;
+using Reminder;
+using Reminder.Model;
 using System.Linq;
-using PillReminder.Persistence;
+using Reminder.PillReminnder.Model;
+using Reminder.PillReminnder.Persistence;
 
 namespace PillReminderTest
 {
@@ -64,7 +65,7 @@ namespace PillReminderTest
         [Test]
         public void SavePillDataTest()
         {
-            pillReminderIO.SavePillData(testPill);
+            pillReminderIO.SaveTaskData(testPill);
 
             Assert.That(File.Exists(Path.Combine(pillDataFolderPath, $"{testPill.Name}.txt")));
 
@@ -80,7 +81,7 @@ namespace PillReminderTest
                 serializer.Serialize(writer, testPill);
             }
 
-            List<Pill> existedPills = pillReminderIO.GetAllPill();
+            List<Pill> existedPills = pillReminderIO.GetAllTask();
 
             Assert.That(existedPills.Count == 1 && existedPills[0].Equals(testPill));
         }
@@ -107,7 +108,7 @@ namespace PillReminderTest
             }
 
             List<Pill> retrivedPill = new List<Pill>();
-            retrivedPill = pillReminderIO.GetAllPill().OrderBy(p=> p.Name).ToList();
+            retrivedPill = pillReminderIO.GetAllTask().OrderBy(p=> p.Name).ToList();
 
             Assert.That(testPill.SequenceEqual(retrivedPill)); 
 
@@ -116,7 +117,7 @@ namespace PillReminderTest
         [Test]
         public void SavePillScheduleTest()
         {
-            pillReminderIO.SavePillSchedule(testPillSchedule);
+            pillReminderIO.SaveTaskSchedule(testPillSchedule);
 
             Assert.That(File.Exists(Path.Combine(pillScheduleDataFolderPath, $"{testPillSchedule.Pill.Name}_Schedule.txt")));
         }
@@ -131,7 +132,7 @@ namespace PillReminderTest
                 PillScheduleStorageObject testPillScheduleStorageObject = new PillScheduleStorageObject(testPillSchedule);
                 serializer.Serialize(writer, testPillScheduleStorageObject);
             }
-            List<PillSchedule> retrivedPillSchedule = pillReminderIO.GetAllPillSchedule();
+            List<PillSchedule> retrivedPillSchedule = pillReminderIO.GetAllTaskSchedule();
             Assert.That(retrivedPillSchedule.Count == 1 && retrivedPillSchedule[0].Equals(testPillSchedule));
         }
 
@@ -175,7 +176,7 @@ namespace PillReminderTest
                 }
             }
 
-            List<PillSchedule> retrivedSchedule = pillReminderIO.GetAllPillSchedule().OrderBy(p => p.Pill.Name).ToList();
+            List<PillSchedule> retrivedSchedule = pillReminderIO.GetAllTaskSchedule().OrderBy(p => p.Pill.Name).ToList();
 
             Assert.That(testPillSchedules.SequenceEqual(retrivedSchedule));
         }

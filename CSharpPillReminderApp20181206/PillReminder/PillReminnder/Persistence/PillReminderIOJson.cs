@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using PillReminder.Model;
+using Reminder.Model;
+using Reminder.PillReminnder.Model;
 
-namespace PillReminder.Persistence
+namespace Reminder.PillReminnder.Persistence
 {
-    public class PillReminderIOJson : IPillReminderIO
+    public class PillReminderIOJson : IPillReminderIO<Pill,PillSchedule>
     {
         string persistenceFolderPath,pillDataFolderPath,pillScheduleDataFolderPath;
 
@@ -23,7 +24,7 @@ namespace PillReminder.Persistence
             Directory.CreateDirectory(pillDataFolderPath);
             Directory.CreateDirectory(pillScheduleDataFolderPath);
         }
-        public void SavePillData(Pill pill)
+        public void SaveTaskData(Pill pill)
         {
             JsonSerializer seralizer = new JsonSerializer();
 
@@ -34,7 +35,7 @@ namespace PillReminder.Persistence
             }
                 
         }
-        public List<Pill>GetAllPill()
+        public List<Pill>GetAllTask()
         {
             List<Pill> allPills = new List<Pill>();
             JsonSerializer serializer = new JsonSerializer();
@@ -53,7 +54,7 @@ namespace PillReminder.Persistence
             return allPills;
         }
 
-        public void SavePillSchedule(PillSchedule pillSchedule)
+        public void SaveTaskSchedule(PillSchedule pillSchedule)
         {
             PillScheduleStorageObject pillScheduleStorageObject = new PillScheduleStorageObject(pillSchedule);
 
@@ -66,7 +67,7 @@ namespace PillReminder.Persistence
             }
 
         }
-        public List<PillSchedule> GetAllPillSchedule()
+        public List<PillSchedule> GetAllTaskSchedule()
         {
             List<PillSchedule> pillSchedules = new List<PillSchedule>();
             List<PillScheduleStorageObject> pillScheduleStorageObjects = new List<PillScheduleStorageObject>();

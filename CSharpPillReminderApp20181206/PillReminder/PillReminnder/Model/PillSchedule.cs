@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Reminder.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PillReminder.Model
+namespace Reminder.PillReminnder.Model
 {
     
     public class PillSchedule : IEquatable<PillSchedule>

@@ -1,18 +1,18 @@
-﻿using PillReminder.Model;
+﻿using Reminder.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PillReminder.Model
+namespace Reminder.Model
 {
-    public interface IPillReminderIO
+    public interface IPillReminderIO<TTaskModel,TTaskSchedule>
     {
-        void SavePillData(Pill pill);
-        List<Pill> GetAllPill();
-        void SavePillSchedule(PillSchedule pillSchedule);
-        List<PillSchedule> GetAllPillSchedule();
+        void SaveTaskData(TTaskModel pill);
+        List<TTaskModel> GetAllTask();
+        void SaveTaskSchedule(TTaskSchedule pillSchedule);
+        List<TTaskSchedule> GetAllTaskSchedule();
 
     }
 }

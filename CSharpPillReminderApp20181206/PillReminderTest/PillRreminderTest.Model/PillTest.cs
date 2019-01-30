@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
-using PillReminder.Model;
+using Reminder.Model;
+using Reminder.PillReminnder.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
