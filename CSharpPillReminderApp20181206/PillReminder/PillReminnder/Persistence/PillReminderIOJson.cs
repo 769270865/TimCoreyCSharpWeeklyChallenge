@@ -10,7 +10,7 @@ using Reminder.PillReminnder.Model;
 
 namespace Reminder.PillReminnder.Persistence
 {
-    public class PillReminderIOJson : IPillReminderIO<Pill,PillSchedule>
+    public class PillReminderIOJson : ITaskReminderIO<Pill,PillSchedule,Guid,Guid>
     {
         string persistenceFolderPath,pillDataFolderPath,pillScheduleDataFolderPath;
 
@@ -28,14 +28,14 @@ namespace Reminder.PillReminnder.Persistence
         {
             JsonSerializer seralizer = new JsonSerializer();
 
-            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{pill.Name}.txt",false))
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{pill.ID.ToString()}.txt",false))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 seralizer.Serialize(writer, pill);
             }
                 
         }
-        public List<Pill>GetAllTask()
+        public List<Pill>ReadAllTask()
         {
             List<Pill> allPills = new List<Pill>();
             JsonSerializer serializer = new JsonSerializer();
@@ -60,7 +60,7 @@ namespace Reminder.PillReminnder.Persistence
 
             JsonSerializer serializer = new JsonSerializer();
 
-            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.Pill.Name}_Schedule.txt"))
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.ID.ToString()}_Schedule.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 serializer.Serialize(writer, pillScheduleStorageObject);
@@ -86,6 +86,26 @@ namespace Reminder.PillReminnder.Persistence
             pillScheduleStorageObjects.ForEach(p => pillSchedules.Add(p.PillScheduleStorageObjectToPillSchedule()));
 
             return pillSchedules;
+        }
+
+        public void UpdateTaskData(Guid taskModelID)
+        {
+            string targetFileName = Directory.GetFiles(pillDataFolderPath, "*.dat").Select(Path.GetFileName).Where(p => p == $"{taskModelID.ToString()}.dat").FirstOrDefault();
+          
+
+
+
+            throw new NotImplementedException();
+        }
+
+        public void DeleteTaskData(Guid taskModelID)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateTaskeScheduleData(Guid taskScheduleID)
+        {
+            throw new NotImplementedException();
         }
     }
 }

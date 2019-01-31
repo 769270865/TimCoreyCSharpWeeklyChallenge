@@ -13,6 +13,7 @@ namespace Reminder.PillReminnder.Persistence
     /// </summary>
     public class PillScheduleStorageObject
     {
+        public Guid ID;
         public  Pill Pill;
         public  List<DateTime> TakenTimes;
         public  List<bool> HasTaken;
@@ -24,9 +25,11 @@ namespace Reminder.PillReminnder.Persistence
         
         public PillScheduleStorageObject(PillSchedule pillSchedule)
         {
+            ID = pillSchedule.ID;
+            Pill = pillSchedule.Pill;
             TakenTimes = new List<DateTime>();
             HasTaken = new List<bool>();
-            Pill = pillSchedule.Pill;
+            
 
             foreach (var item in pillSchedule.TakenRecordForTheDay)
             {
@@ -42,7 +45,7 @@ namespace Reminder.PillReminnder.Persistence
             {
                 takenRecord.Add(new Tuple<Time, bool>(new Time(TakenTimes[i]), HasTaken[i])); 
             }
-            PillSchedule pillSchedule = new PillSchedule(Pill, takenRecord);
+            PillSchedule pillSchedule = new PillSchedule(ID,Pill, takenRecord);
 
             return pillSchedule;
         }

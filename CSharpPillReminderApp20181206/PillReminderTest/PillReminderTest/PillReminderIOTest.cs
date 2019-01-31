@@ -30,6 +30,7 @@ namespace PillReminderTest
 
         private void setUpTestPillData()
         {
+           
             testPill = new Pill("Foo", 3);
             testPillSchedule = new PillSchedule(testPill, new List<Tuple<Time, bool>>()
                                                                                      { new Tuple<Time, bool>(new Time(6,0,0),false),
@@ -67,7 +68,7 @@ namespace PillReminderTest
         {
             pillReminderIO.SaveTaskData(testPill);
 
-            Assert.That(File.Exists(Path.Combine(pillDataFolderPath, $"{testPill.Name}.txt")));
+            Assert.That(File.Exists(Path.Combine(pillDataFolderPath, $"{testPill.ID.ToString()}.txt")));
 
         }
         [Test]
@@ -81,7 +82,7 @@ namespace PillReminderTest
                 serializer.Serialize(writer, testPill);
             }
 
-            List<Pill> existedPills = pillReminderIO.GetAllTask();
+            List<Pill> existedPills = pillReminderIO.ReadAllTask();
 
             Assert.That(existedPills.Count == 1 && existedPills[0].Equals(testPill));
         }
@@ -108,7 +109,7 @@ namespace PillReminderTest
             }
 
             List<Pill> retrivedPill = new List<Pill>();
-            retrivedPill = pillReminderIO.GetAllTask().OrderBy(p=> p.Name).ToList();
+            retrivedPill = pillReminderIO.ReadAllTask().OrderBy(p=> p.Name).ToList();
 
             Assert.That(testPill.SequenceEqual(retrivedPill)); 
 
@@ -119,7 +120,7 @@ namespace PillReminderTest
         {
             pillReminderIO.SaveTaskSchedule(testPillSchedule);
 
-            Assert.That(File.Exists(Path.Combine(pillScheduleDataFolderPath, $"{testPillSchedule.Pill.Name}_Schedule.txt")));
+            Assert.That(File.Exists(Path.Combine(pillScheduleDataFolderPath, $"{testPillSchedule.ID}_Schedule.txt")));
         }
         [Test]
         public void GetPillSchheduleTest()

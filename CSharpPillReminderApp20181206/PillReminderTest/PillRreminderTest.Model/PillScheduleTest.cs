@@ -26,8 +26,8 @@ namespace PillReminderTest.Model
                 new Tuple<Time, bool>(new Time(12,0,0),false),
                 new Tuple<Time, bool>(new Time(18,0,0),false),
             };
-            testPill = new Pill("Foo", 3);
-            testPillSchedule = new PillSchedule(testPill, threeTimesPerDaySchedule);
+            testPill = new Pill("Foo", 3,new Guid("45802942-4d99-410f-8fde-767146e9f1ca"));
+            testPillSchedule = new PillSchedule(new Guid("ab433a69-3fd9-4ad5-bf28-abd5ac698f9d"),testPill, threeTimesPerDaySchedule);
            
         }
 
@@ -91,12 +91,14 @@ namespace PillReminderTest.Model
         [Test]
         public void PillScheduleEqualTest()
         {
-            PillSchedule secondSchedule = new PillSchedule(new Pill("Foo", 3), new List<Tuple<Time, bool>>()
-                                                                                                            {
-                                                                                                                new Tuple<Time, bool>(new Time(6,0,0),false),
-                                                                                                                new Tuple<Time, bool>(new Time(12,0,0),false),
-                                                                                                                new Tuple<Time, bool>(new Time(18,0,0),false),
-                                                                                                            });
+            PillSchedule secondSchedule = new PillSchedule(new Guid("ab433a69-3fd9-4ad5-bf28-abd5ac698f9d"), 
+                                                           new Pill("Foo", 3,new Guid("45802942-4d99-410f-8fde-767146e9f1ca")),                                                                                                             
+                                                           new List<Tuple<Time, bool>>()
+                                                           {
+                                                               new Tuple<Time, bool>(new Time(6,0,0),false),
+                                                               new Tuple<Time, bool>(new Time(12,0,0),false),
+                                                               new Tuple<Time, bool>(new Time(18,0,0),false),
+                                                           });
             Assert.That(secondSchedule.Equals(testPillSchedule));
         }
         [Test]

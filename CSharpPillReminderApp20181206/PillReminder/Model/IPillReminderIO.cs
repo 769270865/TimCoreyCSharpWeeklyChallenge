@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 
 namespace Reminder.Model
 {
-    public interface IPillReminderIO<TTaskModel,TTaskSchedule>
+    public interface ITaskReminderIO<TTaskModel,TTaskSchedule,TTaskModelID,TTaskScheduleID>
     {
         void SaveTaskData(TTaskModel pill);
-        List<TTaskModel> GetAllTask();
+        List<TTaskModel> ReadAllTask();
+        void UpdateTaskData(TTaskModelID taskModelID);
+        void DeleteTaskData(TTaskModelID taskModelID);
+
         void SaveTaskSchedule(TTaskSchedule pillSchedule);
         List<TTaskSchedule> GetAllTaskSchedule();
+        void UpdateTaskeScheduleData(TTaskScheduleID taskScheduleID);
+        void DeleteTaskData(TTaskScheduleID taskScheduleID);
 
     }
 }

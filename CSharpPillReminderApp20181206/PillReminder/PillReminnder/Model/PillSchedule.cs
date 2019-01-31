@@ -11,15 +11,26 @@ namespace Reminder.PillReminnder.Model
     
     public class PillSchedule : IEquatable<PillSchedule>
     {
+        public Guid ID { get; set; }
         public Pill Pill { get; set; }
         public List<Tuple<Time,bool>> TakenRecordForTheDay { get; set; }
-        
 
-        
+
+        public PillSchedule() { }
+
+        public PillSchedule(Guid id,Pill pill,List<Tuple<Time,bool>>takenRecordForTheDay)
+        {
+            ID = id;
+            Pill = pill;
+            TakenRecordForTheDay = takenRecordForTheDay;
+        }
+
+
         public PillSchedule(Pill pill, List<Tuple<Time, bool>> takenRecordForTheDay)
         {
             Pill = pill;
             TakenRecordForTheDay = takenRecordForTheDay;
+            ID = Guid.NewGuid(); 
         }
         
         /// <summary>
@@ -85,7 +96,7 @@ namespace Reminder.PillReminnder.Model
             if (other == null)
                 return false;
              
-            if (!Pill.Equals(other.Pill))               
+            if (!Pill.Equals(other.Pill) || ID != other.ID)               
                 return false;
             
 

@@ -16,17 +16,17 @@ namespace Reminder.PillReminnder
         List<PillSchedule> PillsSchedules;
 
         public override event EventHandler<PillReminderEventArg> OnNewTaskReminder;
-        public override List<Tuple<Pill, Time>> CurrentTask { get;   }
+        public override List<Tuple<Pill, Time>> CurrentTask { get; }
 
         Time checkingInterval;
 
-        IPillReminderIO<Pill,PillSchedule> pillReminderIO;
+        ITaskReminderIO<Pill,PillSchedule,Guid,Guid> pillReminderIO;
         ITimeProvider timeProvider;
         ITimer pillReminderCheckingTimer;
 
         
 
-        public ReminderManager(Time CheckingInterval,IPillReminderIO<Pill,PillSchedule> PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
+        public ReminderManager(Time CheckingInterval,ITaskReminderIO<Pill,PillSchedule,Guid,Guid> PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
         {
             PillsSchedules = new List<PillSchedule>();
             CurrentTask = new List<Tuple<Pill, Time>>();
@@ -38,7 +38,7 @@ namespace Reminder.PillReminnder
 
         }
 
-        private void setDependency(IPillReminderIO<Pill,PillSchedule> PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
+        private void setDependency(ITaskReminderIO<Pill,PillSchedule,Guid,Guid> PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
         {
            
             pillReminderIO = PillReminderIO;

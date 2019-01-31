@@ -17,7 +17,7 @@ namespace PillReminderTest
 {
     public class ReminderManagerTest
     {
-        IPillReminderIO<Pill,PillSchedule> pillReminderIOMock;
+        ITaskReminderIO<Pill,PillSchedule,Guid,Guid> pillReminderIOMock;
         ITimeProvider timeProvider;
         ITimer timerMoock;
         List<PillSchedule> pillSchedules;
@@ -50,9 +50,9 @@ namespace PillReminderTest
             };
            
 
-            pillReminderIOMock = Substitute.For<IPillReminderIO<Pill,PillSchedule>>();
+            pillReminderIOMock = Substitute.For<ITaskReminderIO<Pill,PillSchedule,Guid,Guid>>();
             pillReminderIOMock.GetAllTaskSchedule().Returns(pillSchedules);
-            pillReminderIOMock.GetAllTask().Returns(pills);
+            pillReminderIOMock.ReadAllTask().Returns(pills);
 
         }
 
