@@ -64,7 +64,7 @@ namespace PillReminderTest.Model
         {
             List<Tuple<Time, bool>> differentSchedule = new List<Tuple<Time, bool>>()
             {
-                new Tuple<Time, bool>( new Time(9,0,0),false),
+                new Tuple<Time, bool>(new Time(9,0,0),false),
                 new Tuple<Time, bool>(new Time(15,0,0),false),
                 new Tuple<Time, bool>(new Time(21,0,0),false),
             };

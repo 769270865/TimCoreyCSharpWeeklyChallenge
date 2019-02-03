@@ -181,7 +181,121 @@ namespace PillReminderTest
 
             Assert.That(testPillSchedules.SequenceEqual(retrivedSchedule));
         }
+        [Test]
+        public void UpdatePillTest()
+        {
+            // Save Test Pill
+            JsonSerializer seralizer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                seralizer.Serialize(writer, testPill);
+            }
 
+            // Update Pill
+            Pill updatedPill = new Pill("Foo", 4, testPill.ID);
+            
+            pillReminderIO.UpdateTaskData(testPill.ID, updatedPill);
+
+            //Retrive udated pill
+            Pill acturalPill;
+            using (StreamReader sr = new StreamReader($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"))
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                acturalPill = seralizer.Deserialize<Pill>(reader);
+            }
+
+            Assert.That(acturalPill.Equals(updatedPill));
+        }
+        [Test]
+        public void UpdatePillWithChangedIDTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, testPill.ID);
+            }
+            Pill updatedPill = new Pill("Foo", 4, testPill.ID);
+
+            var exceptionRecived = Assert.Throws<ArgumentException>(() => pillReminderIO.UpdateTaskData(Guid.NewGuid(), updatedPill));
+            Assert.That(exceptionRecived.Message, Is.EqualTo("ID of the pill model can not be changed"));
+        }
+        [Test]
+        public void UpdatePillWithNonExistIDTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, testPill.ID);
+            }
+            Pill updatePill = new Pill("Foo", 3, Guid.NewGuid());
+
+            var exceptionRecived = Assert.Throws<ArgumentException>(() => pillReminderIO.UpdateTaskData(updatePill.ID, updatePill));
+            Assert.That(exceptionRecived.Message, Is.EqualTo("Specificed file does not exist"));
+        }
+        [Test]
+        public void DeletePillTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, testPill);
+            }
+
+            pillReminderIO.DeleteTaskData(testPill.ID);
+            Assert.That(!File.Exists($@"{pillDataFolderPath}\{testPill.ID.ToString()}.dat"));
+
+        }
+        [Test]
+        public void UpdatePillSchedule()
+        {
+            PillSchedule updatedPillSchedule = new PillSchedule(testPillSchedule.ID,
+                                                                testPill, new List<Tuple<Time, bool>>()
+                                                                        {
+                                                                            new Tuple<Time, bool>(new Time(9,0,0),false),
+                                                                            new Tuple<Time, bool>(new Time(13,0,0),false),
+                                                                            new Tuple<Time, bool>(new Time(20,0,0),false),
+                                                                        }
+                                                                );
+            PillSchedule retrivedPillSchedule;
+            PillScheduleStorageObject retrivedPillScheduleInStorageObj;
+
+            JsonSerializer serializer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{testPillSchedule.ID.ToString()}_Schedule.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer,  new PillScheduleStorageObject(testPillSchedule));
+            }
+
+            pillReminderIO.UpdateTaskeScheduleData(testPillSchedule.ID, updatedPillSchedule);
+
+            using (StreamReader sr = new StreamReader($@"{pillScheduleDataFolderPath}\{testPillSchedule.ID}_Schedule.dat"))
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                retrivedPillScheduleInStorageObj = serializer.Deserialize<PillScheduleStorageObject>(reader);
+            }
+            retrivedPillSchedule = retrivedPillScheduleInStorageObj.PillScheduleStorageObjectToPillSchedule();
+
+            Assert.That(updatedPillSchedule.Equals(retrivedPillSchedule));
+
+        }
+        [Test]
+        public void DeletePillScheduleTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{testPillSchedule.ID}_Schedule.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, new PillScheduleStorageObject(testPillSchedule));
+            }
+
+            pillReminderIO.DeleteTaskScheduleData(testPillSchedule.ID);
+
+            Assert.That(!File.Exists($@"{pillScheduleDataFolderPath}\{testPillSchedule.ID.ToString()}_Schedule.dat"));
+        }
 
        
     }

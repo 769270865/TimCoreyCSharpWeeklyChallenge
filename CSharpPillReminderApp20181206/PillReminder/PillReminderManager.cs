@@ -11,7 +11,7 @@ using Reminder.PillReminnder.Model;
 
 namespace Reminder.PillReminnder
 {
-    public class ReminderManager : TaskReminderr<Pill,PillSchedule,PillReminderEventArg>
+    public class PillReminderManager : TaskReminderr<Pill,PillSchedule,PillReminderEventArg>
     {
         List<PillSchedule> PillsSchedules;
 
@@ -26,7 +26,7 @@ namespace Reminder.PillReminnder
 
         
 
-        public ReminderManager(Time CheckingInterval,ITaskReminderIO<Pill,PillSchedule,Guid,Guid> PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
+        public PillReminderManager(Time CheckingInterval,ITaskReminderIO<Pill,PillSchedule,Guid,Guid> PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
         {
             PillsSchedules = new List<PillSchedule>();
             CurrentTask = new List<Tuple<Pill, Time>>();
@@ -58,8 +58,40 @@ namespace Reminder.PillReminnder
             pillReminderCheckingTimer.Start(); 
             
         }
-
        
+        void resetAllPillAtMidNight(object sender,ElapsedEventHandler eventArgs)
+        {   
+            if (timeProvider.CurrentTime.Ticks > (Time.MAX_TICKS - checkingInterval.Ticks / 2) && timeProvider.CurrentTime.Ticks < (checkingInterval.Ticks / 2) )
+            {
+                resetAtMidNight();
+
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        private void resetAtMidNight()
+        {
+            IEnumerable<PillSchedule> pillToTakeAtMidNight =
+                                                        PillsSchedules.FindAll(p => p.IsTimeToTake(timeProvider.CurrentTime, checkingInterval));
+            if (pillToTakeAtMidNight.Count() > 0)
+            {
+                foreach (var pillSchedule in PillsSchedules)
+                {
+                    if (!pillToTakeAtMidNight.Contains(pillSchedule))
+                    {
+                        pillSchedule.ResetSchedule();
+                    }
+                }
+
+            }
+            else
+            {
+                PillsSchedules.ForEach(p => p.ResetSchedule());
+            }
+        }
 
         void checkingNextPileToTake(object sender, ElapsedEventArgs eventArgs)
         {

@@ -51,7 +51,7 @@ namespace PillReminderTest.Model
         [Test]
         public void TimeNotEqualTest()
         {
-            Time differentTime = new Time(15, 30, 30);
+            Time differentTime = new Time(23, 59, 59);
             Assert.False(differentTime.Equals(testTime));
         }
 

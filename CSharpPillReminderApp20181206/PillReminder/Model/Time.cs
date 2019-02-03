@@ -13,6 +13,7 @@ namespace Reminder.Model
         public int Minute { get; private set; }
         public int Second { get; private set; }
         public long Ticks { get; private set; }
+        public const long MAX_TICKS = 863990000000;
 
 
         public Time(DateTime dateTime)

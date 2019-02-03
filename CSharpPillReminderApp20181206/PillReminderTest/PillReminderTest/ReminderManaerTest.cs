@@ -70,7 +70,7 @@ namespace PillReminderTest
                 new Tuple<Pill, Time>(pills[2],new Time(12,0,0))
             }.OrderBy(p => p.Item1.Name).ToList();
             
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             reminderManager.OnNewTaskReminder += (o, s) => recivedPillsToTakke = s.PillToTakeWithTime;
 
 
@@ -85,7 +85,7 @@ namespace PillReminderTest
 
             List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>();
 
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             reminderManager.OnNewTaskReminder += (o, s) => exceptedPills = s.PillToTakeWithTime;
 
             timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(10, 0, 0).ToDateTime()));
@@ -98,7 +98,7 @@ namespace PillReminderTest
         {
             testDependencyIntialize(new DateTime(2019, 1, 23, 18, 0, 0));
             
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
             reminderManager.CheckingOffFinishedTask(new Tuple<Pill, Time>(pills[2], new Time(18, 0, 0)));
 
@@ -119,7 +119,7 @@ namespace PillReminderTest
         {
             testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
             
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 00).ToDateTime()));
             
             var exceptionRecived = Assert.Throws<ArgumentOutOfRangeException>(()=> reminderManager.CheckingOffFinishedTask(new Tuple<Pill, Time>(new Pill("Red Pill", 3), new Time(22, 0, 0))));
@@ -133,7 +133,7 @@ namespace PillReminderTest
             testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
             
 
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
             timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 0).ToDateTime()));
 
 
@@ -146,12 +146,11 @@ namespace PillReminderTest
         [Test]
         public void NoDuplicatedPillTestOnMutippleRemindEvent()
         {
-            timeProvider = Substitute.For<ITimeProvider>();
-            timeProvider.CurrentTime.Returns(new Time(8, 0, 0));
-            timeProvider.CurrrentDateTime.Returns(new Time(8, 0, 0).ToDateTime());
-            timerMoock = Substitute.For<ITimer>();
+            testDependencyIntialize(new Time(8, 0, 0).ToDateTime());
 
-            ReminderManager reminderManager = new ReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+          
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+
             timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(8, 0, 0).ToDateTime()));
             timeProvider.CurrentTime.Returns(new Time(18, 0, 0));
             timeProvider.CurrrentDateTime.Returns(new Time(18, 0, 0).ToDateTime());
@@ -170,6 +169,7 @@ namespace PillReminderTest
 
             Assert.That(exceptedPills.SequenceEqual(acturalPill));
         }
+        
 
         void testDependencyIntialize(DateTime mockTime)
         {

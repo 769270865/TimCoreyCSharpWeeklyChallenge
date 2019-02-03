@@ -38,14 +38,14 @@ namespace Reminder.PillReminnder.Model
         /// </summary>
         /// <param name="time">Current time</param>
         /// <param name="timeToTake">Time pill should taken,give 0 hour if no pill time is later then the given time</param>
-        /// <param name="Interval">Time intervaal to check,1/2 of interval before and after </param>
+        /// <param name="interval">Time intervaal to check,1/2 of interval before and after </param>
         /// <returns>is it time to take this pill</returns>
-        public bool IsTimeToTake(Time time,out Time timeToTake,Time Interval)
+        public bool IsTimeToTake(Time time,out Time timeToTake,Time interval)
         {
             for (int i = 0; i < TakenRecordForTheDay.Count; i++)
             {
-                if (TakenRecordForTheDay[i].Item1.Ticks >= time.Ticks - Interval.Ticks/2 &&
-                    TakenRecordForTheDay[i].Item1.Ticks <= time.Ticks + Interval.Ticks/2)
+                if (TakenRecordForTheDay[i].Item1.Ticks >= time.Ticks - interval.Ticks/2 &&
+                    TakenRecordForTheDay[i].Item1.Ticks <= time.Ticks + interval.Ticks/2)
                 {
                     timeToTake = TakenRecordForTheDay[i].Item1;
                     if (!TakenRecordForTheDay[i].Item2)
@@ -76,7 +76,27 @@ namespace Reminder.PillReminnder.Model
            
             return false;
         }
+        public bool IsTimeToTake(Time time,Time interval)
+        {
+            for (int i = 0; i < TakenRecordForTheDay.Count; i++)
+            {
+                if (TakenRecordForTheDay[i].Item1.Ticks >= time.Ticks - interval.Ticks / 2 &&
+                    TakenRecordForTheDay[i].Item1.Ticks <= time.Ticks + interval.Ticks / 2)
+                {
+                   
+                    if (!TakenRecordForTheDay[i].Item2)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
 
+                }
+            }
+            return false;
+        }
 
         public void ResetSchedule()
         {
