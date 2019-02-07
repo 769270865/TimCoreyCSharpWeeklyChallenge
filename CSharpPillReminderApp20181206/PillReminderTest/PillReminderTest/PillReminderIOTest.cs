@@ -82,7 +82,7 @@ namespace PillReminderTest
                 serializer.Serialize(writer, testPill);
             }
 
-            List<Pill> existedPills = pillReminderIO.ReadAllTask();
+            List<Pill> existedPills = pillReminderIO.GetAllTask();
 
             Assert.That(existedPills.Count == 1 && existedPills[0].Equals(testPill));
         }
@@ -109,7 +109,7 @@ namespace PillReminderTest
             }
 
             List<Pill> retrivedPill = new List<Pill>();
-            retrivedPill = pillReminderIO.ReadAllTask().OrderBy(p=> p.Name).ToList();
+            retrivedPill = pillReminderIO.GetAllTask().OrderBy(p=> p.Name).ToList();
 
             Assert.That(testPill.SequenceEqual(retrivedPill)); 
 

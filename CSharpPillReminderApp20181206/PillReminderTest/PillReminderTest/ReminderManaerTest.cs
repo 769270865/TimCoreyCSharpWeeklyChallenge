@@ -19,7 +19,7 @@ namespace PillReminderTest
     {
         ITaskReminderIO<Pill,PillSchedule,Guid,Guid> pillReminderIOMock;
         ITimeProvider timeProvider;
-        ITimer timerMoock;
+        ITimer timerMock;
         List<PillSchedule> pillSchedules;
         List<Pill> pills;
 
@@ -52,7 +52,7 @@ namespace PillReminderTest
 
             pillReminderIOMock = Substitute.For<ITaskReminderIO<Pill,PillSchedule,Guid,Guid>>();
             pillReminderIOMock.GetAllTaskSchedule().Returns(pillSchedules);
-            pillReminderIOMock.ReadAllTask().Returns(pills);
+            pillReminderIOMock.GetAllTask().Returns(pills);
 
         }
 
@@ -70,11 +70,11 @@ namespace PillReminderTest
                 new Tuple<Pill, Time>(pills[2],new Time(12,0,0))
             }.OrderBy(p => p.Item1.Name).ToList();
             
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
             reminderManager.OnNewTaskReminder += (o, s) => recivedPillsToTakke = s.PillToTakeWithTime;
 
 
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this,createElapsedEventArgs(new Time(12,0,0).ToDateTime()));
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this,createElapsedEventArgs(new Time(12,0,0).ToDateTime()));
        
             Assert.That(recivedPillsToTakke.OrderBy(p => p.Item1.Name).ToList().SequenceEqual(exceptedPills));
         }
@@ -85,10 +85,10 @@ namespace PillReminderTest
 
             List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>();
 
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
             reminderManager.OnNewTaskReminder += (o, s) => exceptedPills = s.PillToTakeWithTime;
 
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(10, 0, 0).ToDateTime()));
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(10, 0, 0).ToDateTime()));
 
             Assert.That(exceptedPills.Count == 0);
         }
@@ -98,8 +98,8 @@ namespace PillReminderTest
         {
             testDependencyIntialize(new DateTime(2019, 1, 23, 18, 0, 0));
             
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
             reminderManager.CheckingOffFinishedTask(new Tuple<Pill, Time>(pills[2], new Time(18, 0, 0)));
 
             List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>()
@@ -113,14 +113,42 @@ namespace PillReminderTest
 
             Assert.That(exceptedPills.SequenceEqual(acturalPills));
           
-       }
+        }
+        [Test]
+        public void CheckingOffPillOffAt_8H_UpdateCalledTest()
+        {
+            ITaskReminderIO<Pill, PillSchedule, Guid, Guid> taskReminderIOMock = Substitute.For<ITaskReminderIO<Pill, PillSchedule, Guid, Guid>>();
+            taskReminderIOMock.GetAllTask().Returns(pills);
+            taskReminderIOMock.GetAllTaskSchedule().Returns(pillSchedules);
+
+            Time mockedTime = new Time(8, 0, 0);
+            timeProvider = Substitute.For<ITimeProvider>();
+            timeProvider.CurrentTime.Returns(mockedTime);
+            timeProvider.CurrrentDateTime.Returns(mockedTime.ToDateTime());
+
+            timerMock = Substitute.For<ITimer>();
+
+            Tuple<Pill, Time> pillToCheckOff = new Tuple<Pill, Time>(new Pill("Bar", 4,pills[1].ID), new Time(8, 0, 0));
+            PillSchedule exceptedRecivedPillSchedule = new PillSchedule(pillSchedules[1].ID, pills[1], new List<Tuple<Time, bool>>()
+            {
+                    new Tuple<Time, bool>(new Time(8,0,0),true),
+                    new Tuple<Time, bool>(new Time(18,0,0),false),
+            });
+            
+
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), taskReminderIOMock, timeProvider, timerMock);
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(mockedTime.ToDateTime()));
+            reminderManager.CheckingOffFinishedTask(pillToCheckOff);
+
+            taskReminderIOMock.Received().UpdateTaskeScheduleData(Arg.Is<Guid>(p => p == exceptedRecivedPillSchedule.ID),Arg.Is<PillSchedule>(p => p.Pill.Equals(pillToCheckOff.Item1)));
+        }
         [Test]
         public void CheckingOffPillThatDoesNotExistInSchedules()
         {
             testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
             
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 00).ToDateTime()));
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 00).ToDateTime()));
             
             var exceptionRecived = Assert.Throws<ArgumentOutOfRangeException>(()=> reminderManager.CheckingOffFinishedTask(new Tuple<Pill, Time>(new Pill("Red Pill", 3), new Time(22, 0, 0))));
 
@@ -133,8 +161,8 @@ namespace PillReminderTest
             testDependencyIntialize(new DateTime(2019, 1, 23, 22, 0, 0));
             
 
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 0).ToDateTime()));
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(22, 0, 0).ToDateTime()));
 
 
             var exceptionRecived = Assert.Throws<ArgumentOutOfRangeException>(() => reminderManager.CheckingOffFinishedTask(new Tuple<Pill, Time>(pills[0], new Time(22, 0, 0))));
@@ -149,12 +177,12 @@ namespace PillReminderTest
             testDependencyIntialize(new Time(8, 0, 0).ToDateTime());
 
           
-            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMoock);
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
 
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(8, 0, 0).ToDateTime()));
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(8, 0, 0).ToDateTime()));
             timeProvider.CurrentTime.Returns(new Time(18, 0, 0));
             timeProvider.CurrrentDateTime.Returns(new Time(18, 0, 0).ToDateTime());
-            timerMoock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(18, 0, 0).ToDateTime()));
 
             List<Tuple<Pill, Time>> exceptedPills = new List<Tuple<Pill, Time>>()
             {
@@ -176,7 +204,7 @@ namespace PillReminderTest
             timeProvider = Substitute.For<ITimeProvider>();
             timeProvider.CurrentTime.Returns(new Time(mockTime));
             timeProvider.CurrrentDateTime.Returns(mockTime);
-            timerMoock = Substitute.For<ITimer>();
+            timerMock = Substitute.For<ITimer>();
         }
 
         ElapsedEventArgs createElapsedEventArgs(DateTime signalTime)

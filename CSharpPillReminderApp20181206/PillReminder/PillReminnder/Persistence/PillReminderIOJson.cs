@@ -35,7 +35,7 @@ namespace Reminder.PillReminnder.Persistence
             }
                 
         }
-        public List<Pill>ReadAllTask()
+        public List<Pill>GetAllTask()
         {
             List<Pill> allPills = new List<Pill>();
             JsonSerializer serializer = new JsonSerializer();

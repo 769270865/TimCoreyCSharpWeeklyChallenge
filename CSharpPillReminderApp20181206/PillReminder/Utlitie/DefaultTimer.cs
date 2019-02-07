@@ -45,6 +45,11 @@ namespace Reminder.Utlitie
 
         public event ElapsedEventHandler Elapsed;
 
+        public ITimer GetNewInstance()
+        {
+            return new DefaultTimer();
+        }
+
         public void Start()
         {
             timer.Start();

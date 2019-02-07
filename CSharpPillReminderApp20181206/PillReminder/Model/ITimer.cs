@@ -16,5 +16,7 @@ namespace Reminder.Model
         void Start();
         void Stop();
 
+
+        ITimer GetNewInstance();
     }
 }

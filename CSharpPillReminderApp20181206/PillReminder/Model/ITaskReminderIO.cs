@@ -10,7 +10,7 @@ namespace Reminder.Model
     public interface ITaskReminderIO<TTaskModel,TTaskSchedulModele,TTaskModelID,TTaskScheduleModelID>
     {
         void SaveTaskData(TTaskModel pill);
-        List<TTaskModel> ReadAllTask();
+        List<TTaskModel> GetAllTask();
         void UpdateTaskData(TTaskModelID taskModelID,TTaskModel taskModel);
         void DeleteTaskData(TTaskModelID taskModelID);
 
