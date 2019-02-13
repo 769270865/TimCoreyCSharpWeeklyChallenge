@@ -10,7 +10,7 @@ using Reminder.PillReminnder.Model;
 
 namespace Reminder.PillReminnder.Persistence
 {
-    public class PillReminderIOJson : ITaskReminderIO<Pill,PillSchedule,Guid,Guid>
+    public class PillReminderIOJson : ITaskReminderIO<Pill,PillSchedule>
     {
         string persistenceFolderPath,pillDataFolderPath,pillScheduleDataFolderPath;
 
@@ -24,23 +24,12 @@ namespace Reminder.PillReminnder.Persistence
             Directory.CreateDirectory(pillDataFolderPath);
             Directory.CreateDirectory(pillScheduleDataFolderPath);
         }
-        public void SaveTaskData(Pill pill)
-        {
-            JsonSerializer seralizer = new JsonSerializer();
-
-            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{pill.ID.ToString()}.txt",false))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                seralizer.Serialize(writer, pill);
-            }
-                
-        }
         public List<Pill>GetAllTask()
         {
             List<Pill> allPills = new List<Pill>();
             JsonSerializer serializer = new JsonSerializer();
 
-            string[] PillsJsonFilesPath = Directory.GetFiles(pillDataFolderPath, "*.txt");
+            string[] PillsJsonFilesPath = Directory.GetFiles(pillDataFolderPath, "*.dat");
 
             foreach (var filePath in PillsJsonFilesPath)
             {
@@ -53,27 +42,13 @@ namespace Reminder.PillReminnder.Persistence
             }
             return allPills;
         }
-
-        public void SaveTaskSchedule(PillSchedule pillSchedule)
-        {
-            PillScheduleStorageObject pillScheduleStorageObject = new PillScheduleStorageObject(pillSchedule);
-
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.ID.ToString()}_Schedule.txt"))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                serializer.Serialize(writer, pillScheduleStorageObject);
-            }
-
-        }
         public List<PillSchedule> GetAllTaskSchedule()
         {
             List<PillSchedule> pillSchedules = new List<PillSchedule>();
             List<PillScheduleStorageObject> pillScheduleStorageObjects = new List<PillScheduleStorageObject>();
 
             JsonSerializer serializer = new JsonSerializer();
-            string[] pillScheduleDataFilesPath = Directory.GetFiles(pillScheduleDataFolderPath, "*.txt");
+            string[] pillScheduleDataFilesPath = Directory.GetFiles(pillScheduleDataFolderPath, "*.dat");
             foreach (var filePaath in pillScheduleDataFilesPath)
             {
                 using (StreamReader sr = new StreamReader(filePaath))
@@ -88,67 +63,148 @@ namespace Reminder.PillReminnder.Persistence
             return pillSchedules;
         }
 
-        public void UpdateTaskData(Guid taskModelID,Pill taskModel)
+        public void SaveTaskData(Pill pill)
         {
-            if (taskModelID != taskModel.ID )
-            {
-                throw new ArgumentException("ID of the pill model can not be changed");
-            }
+            JsonSerializer seralizer = new JsonSerializer();
 
-            if (File.Exists($@"{pillDataFolderPath}\{taskModelID}.dat"))
+            saveTaskData(pill, seralizer);
+                
+        }
+        public void SaveTaskDatas(List<Pill> taskModels)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+
+            foreach (var task in taskModels)
+            {
+                saveTaskData(task, serializer);
+            }
+        }
+        void saveTaskData(Pill pill,JsonSerializer serializer)
+        {
+            using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{pill.ID.ToString()}.dat", false))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, pill);
+            }
+        }
+        
+
+        public void SaveTaskScheduleData(PillSchedule pillSchedule)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            saveTaskScheduleData(pillSchedule, serializer);
+
+        }
+        public void SaveTaskScheduleDatas(List<PillSchedule> taskSchedulModeles)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+
+            foreach (var taskSchedule in taskSchedulModeles)
+            {
+                saveTaskScheduleData(taskSchedule, serializer);
+            }
+        }
+        private void saveTaskScheduleData(PillSchedule pillSchedule, JsonSerializer serializer)
+        {
+            PillScheduleStorageObject pillScheduleStorageObject = new PillScheduleStorageObject(pillSchedule);
+
+            using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{pillSchedule.ID.ToString()}_Schedule.dat"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, pillScheduleStorageObject);
+            }
+        }
+
+        
+
+        public void UpdateTaskData(Pill taskModel)
+        {
+
+            if (File.Exists($@"{pillDataFolderPath}\{taskModel.ID.ToString()}.dat"))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                using (StreamWriter sw = new StreamWriter($@"{pillDataFolderPath}\{taskModelID}.dat", false))
-                using (JsonWriter writer = new JsonTextWriter(sw))
-                {
-                    serializer.Serialize(writer, taskModel);
-                }        
+                saveTaskData(taskModel, serializer);
             }
             else
             {
                 throw new ArgumentException("Specificed file does not exist");
             }
         }
-
-        public void DeleteTaskData(Guid taskModelID)
+        public void UpdateTaskDatas(List<Pill> taskModels)
         {
-            if (File.Exists($@"{pillDataFolderPath}\{taskModelID.ToString()}.dat"))
+            for (int i = 0; i < taskModels.Count; i++)
             {
-                File.Delete($@"{pillDataFolderPath}\{taskModelID.ToString()}.dat");
+                try
+                {
+                    UpdateTaskData(taskModels[i]);
+                }
+                catch (ArgumentException)
+                {
+                    throw new ArgumentException($"Task model index : {i} does not exist");
+                    
+                }              
             }
         }
-
-        public void UpdateTaskeScheduleData(Guid taskScheduleID, PillSchedule taskModel)
+        public void UpdateTaskScheduleData(PillSchedule taskScheduleModel)
         {
-            if (taskScheduleID != taskModel.ID)
-            {
-                throw new ArgumentException("ID of the task schedule model can not be changed");
-            }
-            if (File.Exists($@"{pillScheduleDataFolderPath}\{taskScheduleID.ToString()}_Schedule.dat"))
+           
+            if (File.Exists($@"{pillScheduleDataFolderPath}\{taskScheduleModel.ID.ToString()}_Schedule.dat"))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                using (StreamWriter sw = new StreamWriter($@"{pillScheduleDataFolderPath}\{taskScheduleID.ToString()}_Schedule.dat"))
-                using (JsonWriter writer = new JsonTextWriter(sw))
+                saveTaskScheduleData(taskScheduleModel, serializer);
+            }
+            else
+            {
+                throw new ArgumentException("Specificed file does not exist");
+            }
+        }
+        public void UpdateTaskScheduleDatas(List<PillSchedule> taskScheduls)
+        {
+            for (int i = 0; i < taskScheduls.Count; i++)
+            {
+                try
                 {
-                    serializer.Serialize(writer, new PillScheduleStorageObject(taskModel));
+                    UpdateTaskScheduleData(taskScheduls[i]);
+                }
+                catch (ArgumentException)
+                {
+
+                    throw new ArgumentException($"Pill schedule index : {i} does not exist");
                 }
             }
-            else
+        }
+
+        public void DeleteTaskData(Pill taskModelID)
+        {
+            if (File.Exists($@"{pillDataFolderPath}\{taskModelID.ID.ToString()}.dat"))
             {
-                throw new ArgumentException("Specificed file does not exist");
+                File.Delete($@"{pillDataFolderPath}\{taskModelID.ID.ToString()}.dat");
+            }
+        }
+        public void DeleteTaskDatas(List<Pill> taskModels)
+        {
+            foreach (var pill in taskModels)
+            {
+                DeleteTaskData(pill);
+            }
+        }
+ 
+        public void DeleteTaskScheduleData(PillSchedule taskScheduleModel)
+        {
+            if (File.Exists($@"{pillScheduleDataFolderPath}\{taskScheduleModel.ID.ToString()}_Schedule.dat"))
+            {
+                File.Delete($@"{pillScheduleDataFolderPath}\{taskScheduleModel.ID.ToString()}_Schedule.dat");
+            }
+            
+        }
+        public void DeleteTaskScheduleDatas(List<PillSchedule> taskSchedulModeles)
+        {
+            foreach (var pillSchedule in taskSchedulModeles)
+            {
+                DeleteTaskScheduleData(pillSchedule);
             }
         }
 
-        public void DeleteTaskScheduleData(Guid taskScheduleID)
-        {
-            if (File.Exists($@"{pillScheduleDataFolderPath}\{taskScheduleID.ToString()}_Schedule.dat"))
-            {
-                File.Delete($@"{pillScheduleDataFolderPath}\{taskScheduleID.ToString()}_Schedule.dat");
-            }
-            else
-            {
-                throw new ArgumentException("Specificed file does not exist");
-            }
-        }
+      
     }
 }

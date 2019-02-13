@@ -22,7 +22,7 @@ namespace PillReminderTest.Model
 
             timeOfDayTicks = sampleDateTime.TimeOfDay.Ticks;
 
-            
+        
         }
 
 

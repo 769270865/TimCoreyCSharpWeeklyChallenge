@@ -7,18 +7,27 @@ using System.Threading.Tasks;
 
 namespace Reminder.Model
 {
-    public interface ITaskReminderIO<TTaskModel,TTaskSchedulModele,TTaskModelID,TTaskScheduleModelID>
+    public interface ITaskReminderIO<TTaskModel,TTaskSchedulModele>
     {
-        void SaveTaskData(TTaskModel pill);
         List<TTaskModel> GetAllTask();
-        void UpdateTaskData(TTaskModelID taskModelID,TTaskModel taskModel);
-        void DeleteTaskData(TTaskModelID taskModelID);
-
-        void SaveTaskSchedule(TTaskSchedulModele pillSchedule);
         List<TTaskSchedulModele> GetAllTaskSchedule();
-        void UpdateTaskeScheduleData(TTaskScheduleModelID taskScheduleID,TTaskSchedulModele taskModel);
-        void DeleteTaskScheduleData(TTaskScheduleModelID taskScheduleID);
+        
 
+        void SaveTaskData(TTaskModel taskModel);
+        void SaveTaskDatas(List<TTaskModel> taskModels);
+
+        void SaveTaskScheduleData(TTaskSchedulModele pillSchedule);
+        void SaveTaskScheduleDatas(List<TTaskSchedulModele> taskSchedulModeles);
+
+        void UpdateTaskData(TTaskModel taskModel);
+        void UpdateTaskDatas(List<TTaskModel> taskModels);
+        void UpdateTaskScheduleData(TTaskSchedulModele taskModel);
+        void UpdateTaskScheduleDatas(List<TTaskSchedulModele> taskScheduls);
+
+        void DeleteTaskData(TTaskModel taskModel);
+        void DeleteTaskDatas(List<TTaskModel> taskModels);
+        void DeleteTaskScheduleData(TTaskSchedulModele taskScheduleID);
+        void DeleteTaskScheduleDatas(List<TTaskSchedulModele> taskSchedulModeles);
 
     }
 }

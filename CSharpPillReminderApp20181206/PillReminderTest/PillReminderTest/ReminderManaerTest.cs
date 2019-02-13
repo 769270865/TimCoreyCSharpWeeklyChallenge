@@ -17,7 +17,7 @@ namespace PillReminderTest
 {
     public class ReminderManagerTest
     {
-        ITaskReminderIO<Pill,PillSchedule,Guid,Guid> pillReminderIOMock;
+        ITaskReminderIO<Pill,PillSchedule> pillReminderIOMock;
         ITimeProvider timeProvider;
         ITimer timerMock;
         List<PillSchedule> pillSchedules;
@@ -26,7 +26,7 @@ namespace PillReminderTest
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            pills = new List<Pill>() { new Pill("Foo", 3), new Pill("Bar", 4), new Pill("Baz", 3) };
+            pills = new List<Pill>() { new Pill("Foo", 3), new Pill("Bar", 4), new Pill("Baz", 3),new Pill("RedPill",3) };
             pillSchedules = new List<PillSchedule>()
             {
                 new PillSchedule(pills[0],new List<Tuple<Time, bool>>()
@@ -46,11 +46,15 @@ namespace PillReminderTest
                     new Tuple<Time, bool>(new Time(12,0,0),false),
                     new Tuple<Time, bool>(new Time(18,0,0),false),
                 }),
+                new PillSchedule(pills[3],new List<Tuple<Time,bool>>()
+                {
+                    new Tuple<Time, bool>(new Time(23,56,00),true),
+                }),
 
             };
            
 
-            pillReminderIOMock = Substitute.For<ITaskReminderIO<Pill,PillSchedule,Guid,Guid>>();
+            pillReminderIOMock = Substitute.For<ITaskReminderIO<Pill,PillSchedule>>();
             pillReminderIOMock.GetAllTaskSchedule().Returns(pillSchedules);
             pillReminderIOMock.GetAllTask().Returns(pills);
 
@@ -117,7 +121,7 @@ namespace PillReminderTest
         [Test]
         public void CheckingOffPillOffAt_8H_UpdateCalledTest()
         {
-            ITaskReminderIO<Pill, PillSchedule, Guid, Guid> taskReminderIOMock = Substitute.For<ITaskReminderIO<Pill, PillSchedule, Guid, Guid>>();
+            ITaskReminderIO<Pill, PillSchedule> taskReminderIOMock = Substitute.For<ITaskReminderIO<Pill, PillSchedule>>();
             taskReminderIOMock.GetAllTask().Returns(pills);
             taskReminderIOMock.GetAllTaskSchedule().Returns(pillSchedules);
 
@@ -140,7 +144,7 @@ namespace PillReminderTest
             timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(mockedTime.ToDateTime()));
             reminderManager.CheckingOffFinishedTask(pillToCheckOff);
 
-            taskReminderIOMock.Received().UpdateTaskeScheduleData(Arg.Is<Guid>(p => p == exceptedRecivedPillSchedule.ID),Arg.Is<PillSchedule>(p => p.Pill.Equals(pillToCheckOff.Item1)));
+            taskReminderIOMock.Received().UpdateTaskScheduleData(Arg.Is<PillSchedule>(p => p.Pill.Equals(pillToCheckOff.Item1)));
         }
         [Test]
         public void CheckingOffPillThatDoesNotExistInSchedules()
@@ -197,7 +201,19 @@ namespace PillReminderTest
 
             Assert.That(exceptedPills.SequenceEqual(acturalPill));
         }
-        
+        [Test]
+        public void MidNightPillNotResetAtMidNightTest()
+        {
+            testDependencyIntialize(new Time(23, 58, 30).ToDateTime());
+
+            PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
+            timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(23, 58, 30).ToDateTime()));
+
+            PillSchedule exceptedNonUpdatedSchedule = pillSchedules[3];
+
+
+        }
+
 
         void testDependencyIntialize(DateTime mockTime)
         {
