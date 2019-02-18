@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PillReminder.Model
+namespace Reminder.Model
 {
-    [Serializable]
-    public struct Time
+    
+    public struct Time : IEquatable<Time>
     {
         public int Hour { get; private set; }
         public int Minute { get; private set; }
         public int Second { get; private set; }
         public long Ticks { get; private set; }
+        public const long MAX_TICKS = 863990000000;
 
 
         public Time(DateTime dateTime)
@@ -47,7 +48,28 @@ namespace PillReminder.Model
             DateTime time = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, Hour, Minute, 0);
             return time;
         }
-        
 
+        public override bool Equals(object obj)
+        {
+            return obj is Time && Equals((Time)obj);
+        }
+
+        public bool Equals(Time other)
+        {
+            return Hour == other.Hour &&
+                   Minute == other.Minute &&
+                   Second == other.Second;
+                  
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 109327786;
+            hashCode = hashCode * -1521134295 + Hour.GetHashCode();
+            hashCode = hashCode * -1521134295 + Minute.GetHashCode();
+            hashCode = hashCode * -1521134295 + Second.GetHashCode();
+            
+            return hashCode;
+        }
     }
 }

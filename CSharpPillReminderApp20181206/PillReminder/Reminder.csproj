@@ -44,16 +44,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Pill.cs" />
-    <Compile Include="Model\PillSchedule.cs" />
+    <Compile Include="Model\TaskReminder.cs" />
+    <Compile Include="Model\ITimer.cs" />
+    <Compile Include="Utlitie\DateTimeProvider.cs" />
+    <Compile Include="PillReminnder\Model\Pill.cs" />
+    <Compile Include="PillReminnder\Model\PillSchedule.cs" />
+    <Compile Include="Model\ITaskReminderIO.cs" />
+    <Compile Include="Model\ITimeProvider.cs" />
+    <Compile Include="PillReminnder\Persistence\PillScheduleStorageObject.cs" />
     <Compile Include="PillReminderEventArg.cs" />
-    <Compile Include="PillReminderIO.cs" />
+    <Compile Include="PillReminnder\Persistence\PillReminderIOJson.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReminderManager.cs" />
+    <Compile Include="PillReminderManager.cs" />
     <Compile Include="Model\Time.cs" />
+    <Compile Include="Utlitie\DefaultTimer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Persistence\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
