@@ -10,7 +10,7 @@ using System.Linq;
 using Reminder.PillReminnder.Model;
 using Reminder.PillReminnder.Persistence;
 
-namespace PillReminderTest
+namespace PillReminderTest.IO
 {
     public class PillReminderIOTest
     {
@@ -69,22 +69,24 @@ namespace PillReminderTest
         }
 
 
-        [SetUp]
-        public void SetUp()
+        [TearDown]
+        public void EmptyFilesIOTestDirectory()
         {
-            string[] pillScheduleDataFiles = Directory.GetFiles(pillScheduleDataFolderPath, "*.dat");
             string[] pillDataFiles = Directory.GetFiles(pillDataFolderPath, "*.dat");
+            string[] pillScheduleDataFiles = Directory.GetFiles(pillScheduleDataFolderPath, "*.dat");
 
-            foreach (var filePath in pillScheduleDataFiles)
+            foreach (var file in pillDataFiles)
             {
-                File.Delete(filePath);
+                File.Delete(file);
             }
-            foreach (var filePath in pillDataFiles)
+            foreach (var file in pillScheduleDataFiles)
             {
-                File.Delete(filePath);
+                File.Delete(file);
             }
+
+        
         }
-       
+
         [Test]
         public void GetPillTest()
         {
@@ -198,14 +200,60 @@ namespace PillReminderTest
         [Test]
         public void SaveAllPillDataTest()
         {
+            pillReminderIO.SaveTaskDatas(testPills);
+
+            List<string> acturalNames = new List<string>();
+            List<string> exceptedNames = new List<string>();
+
+            string[] savedPillsPath = Directory.GetFiles(pillDataFolderPath,"*.dat");
+            foreach (var pill in savedPillsPath)
+            {
+                acturalNames.Add(Path.GetFileNameWithoutExtension(pill));
+            }
+
+            foreach (var pill in testPills)
+            {
+                exceptedNames.Add(pill.ID.ToString());
+            }
+
+            acturalNames.Sort();
+            exceptedNames.Sort();
+
+            Assert.That(acturalNames.SequenceEqual(exceptedNames));
+
             
         }
+    
         [Test]
         public void SavePillScheduleTest()
         {
             pillReminderIO.SaveTaskScheduleData(testPillSchedules[0]);
 
             Assert.That(File.Exists(Path.Combine(pillScheduleDataFolderPath, $"{testPillSchedules[0].ID.ToString()}_Schedule.dat")));
+        }
+        [Test]
+        public void SaveAllPillScheduleTest()
+        {
+            pillReminderIO.SaveTaskScheduleDatas(testPillSchedules);
+
+            List<string> acturalFileNames = new List<string>();
+            List<string> exceptedFileNames = new List<string>();
+
+            string[] savedPillSchedulePaths = Directory.GetFiles(pillScheduleDataFolderPath, "*.dat");
+            foreach (var file in savedPillSchedulePaths)
+            {
+                acturalFileNames.Add(Path.GetFileNameWithoutExtension(file));
+            }
+            foreach (var pillSchedule in testPillSchedules)
+            {
+                exceptedFileNames.Add($"{pillSchedule.ID.ToString()}_Schedule");
+            }
+
+            acturalFileNames.Sort();
+            exceptedFileNames.Sort();
+
+            Assert.That(acturalFileNames.SequenceEqual(exceptedFileNames));
+
         }
 
 
@@ -277,6 +325,7 @@ namespace PillReminderTest
                 }
             }
         }
+       
 
         [Test]
         public void UpdatePillWithNonExistIDTest()
@@ -405,6 +454,37 @@ namespace PillReminderTest
             Assert.That(!File.Exists($@"{pillScheduleDataFolderPath}\{testPillSchedules[0].ID.ToString()}_Schedule.dat"));
         }
         [Test]
+        public void DeletePillSchedulesTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            saveTestPillSchedules(serializer);
+
+            List<PillSchedule> pillSchedulesToDelete = new List<PillSchedule>()
+            {
+                new PillSchedule(testPillSchedules[0].ID,testPills[0],new List<Tuple<Time, bool>>()
+                {
+                    new Tuple<Time, bool>(new Time(6,0,0),false),
+                    new Tuple<Time, bool>(new Time(12,0,0),false),
+                    new Tuple<Time, bool>(new Time(18,0,0),false),
+                }),
+                new PillSchedule(testPillSchedules[1].ID,testPills[1],new List<Tuple<Time,bool>>()
+                {
+                    new Tuple<Time, bool>(new Time(8,0,0),false),
+                    new Tuple<Time, bool>(new Time(12,0,0),false),
+                    new Tuple<Time, bool>(new Time(18,0,0),false),
+                    new Tuple<Time, bool>(new Time(22,0,0),false),
+                }),
+            };
+
+
+            pillReminderIO.DeleteTaskScheduleDatas(pillSchedulesToDelete);
+
+            string[] fileInPillScheduleFolder = Directory.GetFiles(pillScheduleDataFolderPath, "*.dat");
+            string pillScheduleFileName = Path.GetFileNameWithoutExtension(fileInPillScheduleFolder[0]);
+
+            Assert.That(fileInPillScheduleFolder.Length == 1 && pillScheduleFileName == $"{testPillSchedules[2].ID.ToString()}_Schedule");
+        }
+        [Test]
         public void DeletePillTest()
         {
             JsonSerializer serializer = new JsonSerializer();
@@ -417,6 +497,24 @@ namespace PillReminderTest
             pillReminderIO.DeleteTaskData(testPills[0]);
             Assert.That(!File.Exists($@"{pillDataFolderPath}\{testPills[0].ID.ToString()}.dat"));
 
+        }
+        [Test]
+        public void DeletePillsTest()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            saveTestPills(serializer);
+
+            List<Pill> pillToDelete = new List<Pill>()
+            {
+                testPills[0], testPills[1]
+            };
+
+            pillReminderIO.DeleteTaskDatas(pillToDelete);
+
+            string[] filesInPillDataFolder = Directory.GetFiles(pillDataFolderPath, "*.dat");
+            string fileName = Path.GetFileNameWithoutExtension(filesInPillDataFolder[0]);
+
+            Assert.That(filesInPillDataFolder.Length == 1 && fileName == testPills[2].ID.ToString());
         }
        
     }

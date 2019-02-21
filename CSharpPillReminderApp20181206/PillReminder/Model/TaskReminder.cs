@@ -8,9 +8,10 @@ using Reminder.Model;
 namespace Reminder.Model
 {
     public abstract class TaskReminderr <TTaskModel,TTaskScheduleModel,TTaskReminderEventArg> where TTaskReminderEventArg : EventArgs
-    {    
+    {
+        public abstract List<TTaskScheduleModel> Schedules { get; }
         public abstract event EventHandler<TTaskReminderEventArg> OnNewTaskReminder;
-        public abstract List<Tuple<TTaskModel, Time>> CurrentTask { get;  }
+        public abstract List<Tuple<TTaskModel, Time>> CurrentTask { get; }
         public abstract void CheckingOffFinishedTask(Tuple<TTaskModel, Time> taskFinished);
     }
 }

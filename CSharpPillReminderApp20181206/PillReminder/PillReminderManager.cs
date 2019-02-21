@@ -11,40 +11,56 @@ using Reminder.PillReminnder.Model;
 
 namespace Reminder.PillReminnder
 {
-    public class PillReminderManager : TaskReminderr<Pill,PillSchedule,PillReminderEventArg>
+    public class PillReminderManager : TaskReminderr<Pill, PillSchedule, PillReminderEventArg>
     {
-        List<PillSchedule> PillsSchedules;
+        List<PillSchedule> _schedules;
+        public override List<PillSchedule> Schedules
+        {
+            get
+            {
+                return _schedules;
+            }
+        }
 
         public override event EventHandler<PillReminderEventArg> OnNewTaskReminder;
-        public override List<Tuple<Pill, Time>> CurrentTask { get; }
+
+        List<Tuple<Pill, Time>> _currentTask;
+        public override List<Tuple<Pill, Time>> CurrentTask
+        {
+            get
+            {
+                return _currentTask;
+            }
+        }
 
         Time checkingInterval;
 
-        ITaskReminderIO<Pill,PillSchedule> pillReminderIO;
+        ITaskReminderIO<Pill, PillSchedule> pillReminderIO;
         ITimeProvider timeProvider;
         ITimer pillReminderCheckingTimer;
 
 
         const long savingIntervalTicks = 18000000000;
-        int currentIntervalWithoutUpdateCount,updateInterval;
         
+        int currentIntervalWithoutUpdateCount, updateInterval;
 
 
-        public PillReminderManager(Time CheckingInterval,ITaskReminderIO<Pill,PillSchedule> PillReminderIO,ITimeProvider TimeProvider,ITimer TimerProvider)
+
+        public PillReminderManager(Time CheckingInterval, ITaskReminderIO<Pill, PillSchedule> PillReminderIO, ITimeProvider TimeProvider, ITimer TimerProvider)
         {
-            PillsSchedules = new List<PillSchedule>();
-            CurrentTask = new List<Tuple<Pill, Time>>();
+            _schedules = new List<PillSchedule>();
+            _currentTask = new List<Tuple<Pill, Time>>();
             checkingInterval = CheckingInterval;
 
-            setDependency(PillReminderIO, TimeProvider,TimerProvider);
-
+            setDependency(PillReminderIO, TimeProvider, TimerProvider);
             intializeReminderTimerData();
 
+            _schedules = pillReminderIO.GetAllTaskSchedule();
         }
 
-        private void setDependency(ITaskReminderIO<Pill,PillSchedule> PillReminderIO, ITimeProvider TimeProvider,ITimer timer)
+        private void setDependency(ITaskReminderIO<Pill, PillSchedule> PillReminderIO, ITimeProvider TimeProvider, ITimer timer)
         {
-           
+
             pillReminderIO = PillReminderIO;
             timeProvider = TimeProvider;
             pillReminderCheckingTimer = timer;
@@ -52,12 +68,8 @@ namespace Reminder.PillReminnder
 
         private void intializeReminderTimerData()
         {
-            PillsSchedules = new List<PillSchedule>();
-            PillsSchedules = pillReminderIO.GetAllTaskSchedule();
-
             intializePillCheckingTimer();
             calculatingSavingIntervalData();
-
         }
 
         private void intializePillCheckingTimer()
@@ -71,49 +83,49 @@ namespace Reminder.PillReminnder
 
         void calculatingSavingIntervalData()
         {
-            updateInterval = Math.Min(((int)(checkingInterval.Ticks / savingIntervalTicks)),1);
-            currentIntervalWithoutUpdateCount = 0; 
+            updateInterval = Math.Min(((int)(checkingInterval.Ticks / savingIntervalTicks)), 1);
+            currentIntervalWithoutUpdateCount = 0;
         }
 
-        void onIntervalPassed(object sender,ElapsedEventArgs eventArgs)
+        void onIntervalPassed(object sender, ElapsedEventArgs eventArgs)
         {
             checkingNextPileToTake(sender, eventArgs);
 
-            resetAllPillAtMidNight(sender,eventArgs);
+            resetAllPillAtMidNight(sender, eventArgs);
 
             savingPillOnInterval(sender, eventArgs);
         }
 
-        
+
 
         void checkingNextPileToTake(object _sender, ElapsedEventArgs _eventArgs)
         {
-            
+
             List<Tuple<Pill, Time>> newPillsToTake = new List<Tuple<Pill, Time>>();
-            
-            foreach (var pill in PillsSchedules)
+
+            foreach (var pill in Schedules)
             {
                 Time takingTime;
-                if (pill.IsTimeToTake(timeProvider.CurrentTime,out takingTime,checkingInterval))
+                if (pill.IsTimeToTake(timeProvider.CurrentTime, out takingTime, checkingInterval))
                 {
-                    
+
                     newPillsToTake.Add(new Tuple<Pill, Time>(pill.Pill, takingTime));
-                                       
+
                 }
             }
 
-            CurrentTask.AddRange(newPillsToTake);
-           
+            _currentTask.AddRange(newPillsToTake);
+
 
             if (newPillsToTake.Count > 0)
             {
                 OnNewTaskReminder?.Invoke(this, new PillReminderEventArg() { PillToTakeWithTime = newPillsToTake });
             }
-                     
+
         }
-        void resetAllPillAtMidNight(object _sender,ElapsedEventArgs _eventArgs)
-        {   
-            if (timeProvider.CurrentTime.Ticks > (Time.MAX_TICKS - checkingInterval.Ticks / 2) && timeProvider.CurrentTime.Ticks < (checkingInterval.Ticks / 2) )
+        void resetAllPillAtMidNight(object _sender, ElapsedEventArgs _eventArgs)
+        {
+            if (timeProvider.CurrentTime.Ticks > (Time.MAX_TICKS - checkingInterval.Ticks / 2) && timeProvider.CurrentTime.Ticks < (checkingInterval.Ticks / 2))
             {
                 resetPillExcludeCurrentInterval();
 
@@ -128,7 +140,7 @@ namespace Reminder.PillReminnder
         {
             if (currentIntervalWithoutUpdateCount >= updateInterval)
             {
-                pillReminderIO.UpdateTaskScheduleDatas(PillsSchedules);
+                pillReminderIO.UpdateTaskScheduleDatas(Schedules);
 
                 currentIntervalWithoutUpdateCount = 0;
             }
@@ -140,12 +152,12 @@ namespace Reminder.PillReminnder
         }
         private void resetPillExcludeCurrentInterval()
         {
-            IEnumerable<PillSchedule> pillToTakeAtCurrentInterval = PillsSchedules
+            IEnumerable<PillSchedule> pillToTakeAtCurrentInterval = Schedules
                                                             .FindAll(p => p.IsTimeToTake(timeProvider.CurrentTime, checkingInterval));
-                                                        
+
             if (pillToTakeAtCurrentInterval.Count() > 0)
             {
-                foreach (var pillSchedule in PillsSchedules)
+                foreach (var pillSchedule in Schedules)
                 {
                     if (!pillToTakeAtCurrentInterval.Contains(pillSchedule))
                     {
@@ -156,34 +168,34 @@ namespace Reminder.PillReminnder
             }
             else
             {
-                PillsSchedules.ForEach(p => p.ResetSchedule());
+                Schedules.ForEach(p => p.ResetSchedule());
             }
             updateAllPillSchedule();
         }
-        
 
-       
+
+
         void updateAllPillSchedule()
         {
-            foreach (var pillSchedule in PillsSchedules)
+            foreach (var pillSchedule in Schedules)
             {
                 pillReminderIO.UpdateTaskScheduleData(pillSchedule);
             }
         }
 
 
-        public override void CheckingOffFinishedTask(Tuple<Pill,Time> pillTaken)
+        public override void CheckingOffFinishedTask(Tuple<Pill, Time> pillTaken)
         {
-            int pillScheduleIndex = PillsSchedules.FindIndex(p => p.Pill.Equals(pillTaken.Item1));
+            int pillScheduleIndex = Schedules.FindIndex(p => p.Pill.Equals(pillTaken.Item1));
 
             if (pillScheduleIndex != -1)
             {
-                int takenRecordForTheDayIndex = PillsSchedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item1.Equals(pillTaken.Item2));
+                int takenRecordForTheDayIndex = Schedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item1.Equals(pillTaken.Item2));
                 checkOffTakenTime(pillTaken, pillScheduleIndex, takenRecordForTheDayIndex);
             }
             else
             {
-                throw new ArgumentOutOfRangeException("Pill","Pill given does not exist");
+                throw new ArgumentOutOfRangeException("Pill", "Pill given does not exist");
             }
 
 
@@ -194,11 +206,11 @@ namespace Reminder.PillReminnder
             if (takenRecordForTheDayIndex != -1)
             {
 
-                PillsSchedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex]
-                    = new Tuple<Time, bool>(PillsSchedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex].Item1, true);
-                CurrentTask.Remove(pillTaken);
+                Schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex]
+                    = new Tuple<Time, bool>(Schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex].Item1, true);
+                _currentTask.Remove(pillTaken);
 
-                pillReminderIO.UpdateTaskScheduleData(PillsSchedules[pillScheduleIndex]);
+                pillReminderIO.UpdateTaskScheduleData(Schedules[pillScheduleIndex]);
             }
             else
             {

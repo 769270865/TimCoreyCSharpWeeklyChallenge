@@ -13,7 +13,7 @@ using System.Linq;
 using Reminder.PillReminnder.Model;
 using Reminder.PillReminnder;
 
-namespace PillReminderTest
+namespace PillReminderTest.Manager
 {
     public class ReminderManagerTest
     {
@@ -209,7 +209,7 @@ namespace PillReminderTest
             PillReminderManager reminderManager = new PillReminderManager(new Time(0, 5, 0), pillReminderIOMock, timeProvider, timerMock);
             timerMock.Elapsed += Raise.Event<ElapsedEventHandler>(this, createElapsedEventArgs(new Time(23, 58, 30).ToDateTime()));
 
-            PillSchedule exceptedNonUpdatedSchedule = pillSchedules[3];
+            
 
 
         }
