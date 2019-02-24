@@ -41,6 +41,7 @@ namespace Reminder.PillReminnder
 
 
         const long savingIntervalTicks = 18000000000;
+       
         
         int currentIntervalWithoutUpdateCount, updateInterval;
 
@@ -103,7 +104,7 @@ namespace Reminder.PillReminnder
 
             List<Tuple<Pill, Time>> newPillsToTake = new List<Tuple<Pill, Time>>();
 
-            foreach (var pill in Schedules)
+            foreach (var pill in _schedules)
             {
                 Time takingTime;
                 if (pill.IsTimeToTake(timeProvider.CurrentTime, out takingTime, checkingInterval))
@@ -127,7 +128,7 @@ namespace Reminder.PillReminnder
         {
             if (timeProvider.CurrentTime.Ticks > (Time.MAX_TICKS - checkingInterval.Ticks / 2) && timeProvider.CurrentTime.Ticks < (checkingInterval.Ticks / 2))
             {
-                resetPillExcludeCurrentInterval();
+                _schedules.ForEach(p => p.ResetSchedule());
 
             }
             else
@@ -140,7 +141,7 @@ namespace Reminder.PillReminnder
         {
             if (currentIntervalWithoutUpdateCount >= updateInterval)
             {
-                pillReminderIO.UpdateTaskScheduleDatas(Schedules);
+                pillReminderIO.UpdateTaskScheduleDatas(_schedules);
 
                 currentIntervalWithoutUpdateCount = 0;
             }
@@ -150,34 +151,12 @@ namespace Reminder.PillReminnder
             }
 
         }
-        private void resetPillExcludeCurrentInterval()
-        {
-            IEnumerable<PillSchedule> pillToTakeAtCurrentInterval = Schedules
-                                                            .FindAll(p => p.IsTimeToTake(timeProvider.CurrentTime, checkingInterval));
-
-            if (pillToTakeAtCurrentInterval.Count() > 0)
-            {
-                foreach (var pillSchedule in Schedules)
-                {
-                    if (!pillToTakeAtCurrentInterval.Contains(pillSchedule))
-                    {
-                        pillSchedule.ResetSchedule();
-                    }
-                }
-
-            }
-            else
-            {
-                Schedules.ForEach(p => p.ResetSchedule());
-            }
-            updateAllPillSchedule();
-        }
-
+       
 
 
         void updateAllPillSchedule()
         {
-            foreach (var pillSchedule in Schedules)
+            foreach (var pillSchedule in _schedules)
             {
                 pillReminderIO.UpdateTaskScheduleData(pillSchedule);
             }
@@ -186,11 +165,11 @@ namespace Reminder.PillReminnder
 
         public override void CheckingOffFinishedTask(Tuple<Pill, Time> pillTaken)
         {
-            int pillScheduleIndex = Schedules.FindIndex(p => p.Pill.Equals(pillTaken.Item1));
+            int pillScheduleIndex = _schedules.FindIndex(p => p.Pill.Equals(pillTaken.Item1));
 
             if (pillScheduleIndex != -1)
             {
-                int takenRecordForTheDayIndex = Schedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item1.Equals(pillTaken.Item2));
+                int takenRecordForTheDayIndex = _schedules[pillScheduleIndex].TakenRecordForTheDay.FindIndex(p => p.Item1.Equals(pillTaken.Item2));
                 checkOffTakenTime(pillTaken, pillScheduleIndex, takenRecordForTheDayIndex);
             }
             else
@@ -206,11 +185,11 @@ namespace Reminder.PillReminnder
             if (takenRecordForTheDayIndex != -1)
             {
 
-                Schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex]
-                    = new Tuple<Time, bool>(Schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex].Item1, true);
+                _schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex]
+                    = new Tuple<Time, bool>(_schedules[pillScheduleIndex].TakenRecordForTheDay[takenRecordForTheDayIndex].Item1, true);
                 _currentTask.Remove(pillTaken);
 
-                pillReminderIO.UpdateTaskScheduleData(Schedules[pillScheduleIndex]);
+                pillReminderIO.UpdateTaskScheduleData(_schedules[pillScheduleIndex]);
             }
             else
             {
