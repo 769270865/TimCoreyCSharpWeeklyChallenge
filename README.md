@@ -1,5 +1,10 @@
 # TimCoreyCSharpWeeklyChallenge
-This repo contain my solutions to Tim Corey's CSharp weekly challenge update weekly
+This repo contain my solutions to Tim Corey's CSharp weekly challenge update regularly
+The challenge marked with * catains features extension that goes beyound requirement needs
 
-CSharpDateTimeChallenge 20181129
+DateTimeChallenge 20181129
 Requirment Viedo:https://www.youtube.com/watch?v=vMHh35slMeE
+
+Pill Reminder App 20181206*
+Requirment Viedo:https://youtu.be/6k4sesOlgkc
+
