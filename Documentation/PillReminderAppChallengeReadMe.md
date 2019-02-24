@@ -7,32 +7,26 @@ implemented to allow cross-platform and different feature to be posible.
 
 ### Model Folder
 	
-**Abstract Class**	
+**Abstract Class**		
 	
-	TaskReminder
-		
+        TaskReminder		
 		Generic Abstract class for a reminder logic
 
 **Interface**
 	
-	ITaskReminderIO
-			
-		Interface for persistence functions
-		
-	ITimeProvider
-			
+	ITaskReminderIO			
+		Interface for persistence functions	
+	ITimeProvider			
 		Interface for time functions
 		
-	ITimer
-		
+	ITimer		
 		Interface for timer
 **Struct**
 		
-	Time			
-		
-		A purely time value type that strip year,month,day 
-			from the DateTime in C#,with method convert back 
-			and forth to DateTime
+	Time					
+	        A purely time value type that strip year,month,day 
+		from the DateTime in C#,with method convert back 
+		and forth to DateTime
 
 
 ### PillReminder Folder
@@ -41,35 +35,29 @@ implemented to allow cross-platform and different feature to be posible.
 	
 **Model Folder**
 	
-	Pill
-	
+	Pill	
 	Model for Pill with Guid, Name, Quantity to take, Description
 	
-	PillSchedule
-	
+	PillSchedule	
 	Model for single pill schedule, with a seperate schedule Guid, 
 	pill it for, and a list of Time,Bool tuple for taken record
 	
-   **Persistence Folder**
+   **Model\Persistence**
 		
-		PillReminderIOJson
-			
-			PillReminder persistence function saving and retriving pill, pillSchedule 
-			to JSON
+		PillReminderIOJson						
+                PillReminder persistence function saving and retriving pill, pillSchedule 
+                to JSON
 		
-		PillScheduleStorageObject
-			
-			A helper object that reduce complexity of the PillSchedule for the easy 
-			IO operation for PillReminderIOJson
+		PillScheduleStorageObject			
+		A helper object that reduce complexity of the PillSchedule for the easy 
+		IO operation for PillReminderIOJson
 
 ### Utlitie
 	
-	DateTimeProvider
-		
+	DateTimeProvider		
 		Provide DateTime infomation use C# DateTime
 	
 	DefaultTimer
-		
 		Timer class warp the C# timer 
 			 
 
