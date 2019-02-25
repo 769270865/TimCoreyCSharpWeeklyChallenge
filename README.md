@@ -10,4 +10,4 @@ Requirment Viedo: https://www.youtube.com/watch?v=vMHh35slMeE
 ## Pill Reminder App 20181206*
 Requirment Viedo: https://youtu.be/6k4sesOlgkc
 
-[Pill Reminder App Read Me](Documentation/PPillReminderAppChallengeReadMe.md)
+[Pill Reminder App Read Me](Documentation/PillReminderAppChallengeReadMe.md)
